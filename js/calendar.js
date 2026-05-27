@@ -19,25 +19,32 @@ const Calendar = {
     this.showCron = localStorage.getItem('fleet-calendar-show-cron') === 'true';
     this.showKanban = localStorage.getItem('fleet-kanban-show-on-calendar') === 'true';
 
-    document.getElementById('calPrevBtn').addEventListener('click', () => this.navigate(-1));
-    document.getElementById('calNextBtn').addEventListener('click', () => this.navigate(1));
-    document.getElementById('calTodayBtn').addEventListener('click', () => this.goToday());
-    document.getElementById('calToggleCron').addEventListener('click', () => this.toggleCron());
-    document.getElementById('calToggleKanban').addEventListener('click', () => this.toggleKanban());
+    // Standalone page buttons (guarded — page may not exist)
+    const el = id => document.getElementById(id);
+    if (el('calPrevBtn')) el('calPrevBtn').addEventListener('click', () => this.navigate(-1));
+    if (el('calNextBtn')) el('calNextBtn').addEventListener('click', () => this.navigate(1));
+    if (el('calTodayBtn')) el('calTodayBtn').addEventListener('click', () => this.goToday());
+    if (el('calToggleCron')) el('calToggleCron').addEventListener('click', () => this.toggleCron());
+    if (el('calToggleKanban')) el('calToggleKanban').addEventListener('click', () => this.toggleKanban());
+
+    // Dashboard calendar nav buttons
+    if (el('dashCalPrev')) el('dashCalPrev').addEventListener('click', () => { this.navigate(-1); });
+    if (el('dashCalNext')) el('dashCalNext').addEventListener('click', () => { this.navigate(1); });
+    if (el('dashCalToday')) el('dashCalToday').addEventListener('click', () => { this.goToday(); });
 
     document.querySelectorAll('.cal-view-btn').forEach(btn => {
       btn.addEventListener('click', (e) => this.switchView(e.target.dataset.view));
     });
 
-    // Modal
-    document.getElementById('calSaveBtn').addEventListener('click', () => this.saveEvent());
-    document.getElementById('calCancelBtn').addEventListener('click', () => this.closeModal());
-    document.getElementById('calDeleteBtn').addEventListener('click', () => this.deleteEvent());
-    document.getElementById('calModalBackdrop').addEventListener('click', () => this.closeModal());
+    // Modal (always present)
+    if (el('calSaveBtn')) el('calSaveBtn').addEventListener('click', () => this.saveEvent());
+    if (el('calCancelBtn')) el('calCancelBtn').addEventListener('click', () => this.closeModal());
+    if (el('calDeleteBtn')) el('calDeleteBtn').addEventListener('click', () => this.deleteEvent());
+    if (el('calModalBackdrop')) el('calModalBackdrop').addEventListener('click', () => this.closeModal());
 
     // Agent assignment toggle
-    document.getElementById('calHasAgentTask').addEventListener('change', (e) => {
-      document.getElementById('calAgentTaskFields').style.display = e.target.checked ? 'block' : 'none';
+    if (el('calHasAgentTask')) el('calHasAgentTask').addEventListener('change', (e) => {
+      el('calAgentTaskFields').style.display = e.target.checked ? 'block' : 'none';
     });
 
     this.updateToggleStates();
@@ -118,6 +125,11 @@ const Calendar = {
   },
 
   render() {
+    // If standalone page containers missing, render dashboard embed instead
+    if (!document.getElementById('calMonthGrid')) {
+      this.renderToDashboard();
+      return;
+    }
     this.updateHeader();
     document.getElementById('calToggleCron').checked = this.showCron;
     document.getElementById('calToggleKanban').checked = this.showKanban;
@@ -166,8 +178,10 @@ const Calendar = {
   },
 
   updateToggleStates() {
-    document.getElementById('calToggleCron').checked = this.showCron;
-    document.getElementById('calToggleKanban').checked = this.showKanban;
+    const cronEl = document.getElementById('calToggleCron');
+    const kanbanEl = document.getElementById('calToggleKanban');
+    if (cronEl) cronEl.checked = this.showCron;
+    if (kanbanEl) kanbanEl.checked = this.showKanban;
   },
 
   // ===== MONTH VIEW =====

@@ -57,9 +57,7 @@ const App = {
     const hash = window.location.hash || '#dashboard';
     let page = 'dashboard';
 
-    if (hash.startsWith('#kanban')) page = 'kanban';
-    else if (hash.startsWith('#calendar')) page = 'calendar';
-    else if (hash.startsWith('#council')) page = 'council';
+    if (hash.startsWith('#council')) page = 'council';
     else if (hash.startsWith('#settings')) page = 'settings';
     else if (hash.startsWith('#vault')) page = 'vault';
     else if (hash.startsWith('#feed')) page = 'feed';
@@ -90,16 +88,9 @@ const App = {
     });
 
     // Page title
-    const titles = { dashboard: 'Fleet Overview', kanban: 'Kanban Board', calendar: 'Fleet Calendar', council: 'Council Chamber', vault: 'Obsidian Vault', feed: 'Live Feed', 'agent-detail': 'Agent Detail', settings: 'Settings' };
+    const titles = { dashboard: 'Fleet Overview', council: 'Council Chamber', vault: 'Obsidian Vault', feed: 'Live Feed', 'agent-detail': 'Agent Detail', settings: 'Settings' };
     document.getElementById('pageTitle').textContent = titles[page] || 'Fleet Overview';
 
-    // Render kanban if navigating there
-    if (page === 'kanban') Kanban.render();
-    // Init calendar if navigating there
-    if (page === 'calendar') {
-      if (!this._calendarInit) { Calendar.init(); this._calendarInit = true; }
-      else Calendar.render();
-    }
     // Refresh dashboard content on return to dashboard
     if (page === 'dashboard') {
       if (!this._calendarInit) { Calendar.init(); this._calendarInit = true; }

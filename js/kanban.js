@@ -2,10 +2,20 @@
 
 const Kanban = {
   init() {
-    document.getElementById('btnAddTask').addEventListener('click', () => this.openTaskModal());
-    document.getElementById('btnSaveTask').addEventListener('click', () => this.saveTask());
-    document.getElementById('btnCancelTask').addEventListener('click', () => this.closeTaskModal());
-    document.getElementById('taskModalBackdrop').addEventListener('click', () => this.closeTaskModal());
+    // Modal buttons (shared across dashboard and old page — defensively guarded)
+    const addBtn = document.getElementById('btnAddTask');
+    if (addBtn) addBtn.addEventListener('click', () => this.openTaskModal());
+    const saveBtn = document.getElementById('btnSaveTask');
+    if (saveBtn) saveBtn.addEventListener('click', () => this.saveTask());
+    const cancelBtn = document.getElementById('btnCancelTask');
+    if (cancelBtn) cancelBtn.addEventListener('click', () => this.closeTaskModal());
+    const backdrop = document.getElementById('taskModalBackdrop');
+    if (backdrop) backdrop.addEventListener('click', () => this.closeTaskModal());
+
+    // Dashboard +Add Task button
+    const dashBtn = document.getElementById('btnDashboardAddTask');
+    if (dashBtn) dashBtn.addEventListener('click', () => this.openTaskModal());
+
     this.setupDragDrop();
   },
 
@@ -25,6 +35,11 @@ const Kanban = {
   },
 
   render() {
+    // If standalone page containers missing, render dashboard embed instead
+    if (!document.getElementById('col-backlog')) {
+      this.renderToDashboard();
+      return;
+    }
     ['backlog', 'in-progress', 'review', 'done'].forEach(col => {
       const container = document.getElementById(`col-${col}`);
       const tasks = State.getColumnTasks(col);

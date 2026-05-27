@@ -21,14 +21,6 @@
       <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><rect x="1" y="1" width="6" height="6" rx="1.5" stroke="currentColor" stroke-width="1.3"/><rect x="9" y="1" width="6" height="6" rx="1.5" stroke="currentColor" stroke-width="1.3"/><rect x="1" y="9" width="6" height="6" rx="1.5" stroke="currentColor" stroke-width="1.3"/><rect x="9" y="9" width="6" height="6" rx="1.5" stroke="currentColor" stroke-width="1.3"/></svg>
       Fleet Overview
     </a>
-    <a class="nav-item" href="#kanban">
-      <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><rect x="1" y="2" width="4" height="12" rx="1" stroke="currentColor" stroke-width="1.3"/><rect x="7" y="5" width="4" height="9" rx="1" stroke="currentColor" stroke-width="1.3"/><rect x="13" y="1" width="3" height="13" rx="1" stroke="currentColor" stroke-width="1.3"/></svg>
-      Kanban Board
-    </a>
-    <a class="nav-item" href="#calendar">
-      <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><rect x="1.5" y="2.5" width="13" height="12" rx="2" stroke="currentColor" stroke-width="1.3"/><path d="M1.5 6h13M5 1v3M11 1v3" stroke="currentColor" stroke-width="1.3"/></svg>
-      Calendar
-    </a>
     <a class="nav-item" href="#council">
       <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><circle cx="4" cy="5" r="2" stroke="currentColor" stroke-width="1.3"/><circle cx="12" cy="5" r="2" stroke="currentColor" stroke-width="1.3"/><circle cx="8" cy="5" r="2" stroke="currentColor" stroke-width="1.3"/><path d="M1 13c0-2 1.5-3 3-3s3 1 3 3" stroke="currentColor" stroke-width="1.3"/><path d="M9 13c0-2 1.5-3 3-3s3 1 3 3" stroke="currentColor" stroke-width="1.3"/></svg>
       Council Chamber
@@ -113,7 +105,7 @@
         <div class="dashboard-main" id="dashboardKanban">
           <div class="panel-header">
             <span class="panel-title">Kanban Board</span>
-            <a class="panel-link" href="#kanban" title="Open full board with drag-drop">→ Full Board</a>
+            <button class="btn btn-sm btn-primary" id="btnDashboardAddTask">+ Task</button>
           </div>
           <div class="kanban-board dash-kanban-board" id="dashboardKanbanBoard">
             <div class="kanban-col" data-col="backlog"><div class="kanban-col-header" style="--accent:#8a8f98">Backlog</div><div class="kanban-cards" id="dash-col-backlog"></div></div>
@@ -127,7 +119,11 @@
           <div class="panel" id="dashboardCalendar">
             <div class="panel-header">
               <span class="panel-title">Calendar — <span id="dashCalLabel">May 2026</span></span>
-              <a class="panel-link" href="#calendar" title="Open full calendar">→ Full</a>
+              <div class="cal-dash-nav">
+                <button class="btn btn-icon btn-sm" id="dashCalPrev" title="Previous month">←</button>
+                <button class="btn btn-outline btn-sm" id="dashCalToday">Today</button>
+                <button class="btn btn-icon btn-sm" id="dashCalNext" title="Next month">→</button>
+              </div>
             </div>
             <div class="cal-month" id="dashCalGrid">
               <div class="cal-month-header" id="dashCalHeader"></div>
@@ -142,53 +138,6 @@
             <div class="signals-list" id="signalsList"></div>
           </div>
         </div>
-      </div>
-    </div>
-
-    <!-- KANBAN PAGE -->
-    <div class="page" id="page-kanban">
-      <div class="kanban-header">
-        <button class="btn btn-primary" id="btnAddTask">+ Add Task</button>
-      </div>
-      <div class="kanban-board" id="kanbanBoard">
-        <div class="kanban-col" data-col="backlog"><div class="kanban-col-header" style="--accent:#8a8f98">Backlog</div><div class="kanban-cards" id="col-backlog"></div></div>
-        <div class="kanban-col" data-col="in-progress"><div class="kanban-col-header" style="--accent:#f59e0b">In Progress</div><div class="kanban-cards" id="col-in-progress"></div></div>
-        <div class="kanban-col" data-col="review"><div class="kanban-col-header" style="--accent:#06b6d4">Review</div><div class="kanban-cards" id="col-review"></div></div>
-        <div class="kanban-col" data-col="done"><div class="kanban-col-header" style="--accent:#10b981">Done</div><div class="kanban-cards" id="col-done"></div></div>
-      </div>
-    </div>
-
-    <!-- CALENDAR PAGE -->
-    <div class="page" id="page-calendar">
-      <div class="calendar-toolbar">
-        <div class="cal-nav">
-          <button class="btn btn-icon" id="calPrevBtn" title="Previous">←</button>
-          <button class="btn btn-outline" id="calTodayBtn">Today</button>
-          <button class="btn btn-icon" id="calNextBtn" title="Next">→</button>
-          <span class="cal-label" id="calLabel">May 2026</span>
-        </div>
-        <div class="cal-views">
-          <button class="cal-view-btn active" data-view="month">Month</button>
-          <button class="cal-view-btn" data-view="week">Week</button>
-          <button class="cal-view-btn" data-view="day">Day</button>
-        </div>
-        <div class="cal-overlays">
-          <label class="toggle-switch cal-toggle" title="Show cron jobs">
-            <input type="checkbox" id="calToggleCron">
-            <span class="toggle-slider"></span>
-            ⟳ Cron
-          </label>
-          <label class="toggle-switch cal-toggle" title="Show kanban deadlines">
-            <input type="checkbox" id="calToggleKanban">
-            <span class="toggle-slider"></span>
-            ▸ Kanban
-          </label>
-        </div>
-        <button class="btn btn-primary cal-add-btn" onclick="Calendar.openModal()">+ Event</button>
-      </div>
-      <div class="cal-month" id="calMonthGrid">
-        <div class="cal-month-header" id="calMonthHeader"></div>
-        <div class="cal-month-body" id="calMonthBody"></div>
       </div>
     </div>
 

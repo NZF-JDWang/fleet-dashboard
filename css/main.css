@@ -105,6 +105,7 @@ body{
 /* PANELS */
 .panel{background:var(--bg-panel);border:1px solid var(--border-subtle);border-radius:var(--radius-lg);overflow:hidden}
 .panel-header{display:flex;align-items:center;justify-content:space-between;padding:12px 16px;border-bottom:1px solid var(--border-subtle)}
+.cal-dash-nav{display:flex;gap:4px;align-items:center}
 .panel-title{font-size:13px;font-weight:600;color:var(--text-primary);text-transform:uppercase;letter-spacing:0.3px}
 .legend{display:flex;gap:12px;font-size:11px;color:var(--text-quiet)}
 .legend b{font-weight:600}
