@@ -20,11 +20,11 @@ Pure vanilla HTML/CSS/JS — no frameworks, no build step. Single `index.html` l
 
 ## Agent Configuration
 
-| Agent | Role | Color | Port |
-|-------|------|-------|------|
-| Claire | Chief of Staff | `#7c3aed` | 8642 |
-| Sven | Dev Agent | `#06b6d4` | 8643 |
-| Yuki | Infra Engineer | `#39FF14` | 8644 |
+| Agent | Role | Color | Host Port |
+|-------|------|-------|-----------|
+| Claire | Chief of Staff | `#7c3aed` | 8644 |
+| Sven | Dev Agent | `#06b6d4` | 8648 |
+| Yuki | Infra Engineer | `#39FF14` | 8647 |
 | Margot | Vault Keeper | `#f59e0b` | 8645 |
 | Klaus | Research Lead | `#c2710f` | 8646 |
 

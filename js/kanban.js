@@ -9,6 +9,30 @@ const Kanban = {
     this.setupDragDrop();
   },
 
+  // Mini render for dashboard widget — last 6 tasks across all columns
+  renderMini() {
+    const container = document.getElementById('kanbanMini');
+    if (!container) return;
+    const tasks = State.tasks.slice(0, 6);
+    if (tasks.length === 0) {
+      container.innerHTML = '<div class="mini-empty">No tasks yet. <a href="#kanban">Open board →</a></div>';
+      return;
+    }
+    container.innerHTML = tasks.map(t => {
+      const agent = AGENTS_BY_ID[t.assignee] || { color: '#62666d' };
+      const priClass = t.priority === 'high' ? 'pri-high' : t.priority === 'critical' ? 'pri-critical' : '';
+      return `<div class="mini-task">
+        <span class="mini-dot" style="background:${agent.color}"></span>
+        <span class="mini-title ${priClass}">${esc(t.title)}</span>
+        <span class="mini-col">${t.column}</span>
+      </div>`;
+    }).join('');
+    // "more" indicator
+    if (State.tasks.length > 6) {
+      container.innerHTML += `<div class="mini-more"><a href="#kanban">+${State.tasks.length - 6} more →</a></div>`;
+    }
+  },
+
   render() {
     ['backlog', 'in-progress', 'review', 'done'].forEach(col => {
       const container = document.getElementById(`col-${col}`);

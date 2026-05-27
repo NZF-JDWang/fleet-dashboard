@@ -44,6 +44,33 @@ const Calendar = {
     this.render();
   },
 
+  // Mini week view for dashboard widget — shows current week with event dots
+  renderMiniWeek() {
+    const container = document.getElementById('calendarMini');
+    if (!container) return;
+    const today = new Date();
+    // Monday of current week
+    const start = new Date(today);
+    start.setDate(start.getDate() - ((start.getDay() + 6) % 7)); // Monday start
+    const days = [];
+    for (let i = 0; i < 7; i++) {
+      const d = new Date(start);
+      d.setDate(d.getDate() + i);
+      const key = this._dateKey(d);
+      const isToday = this._dateKey(today) === key;
+      const events = this._eventsForDate(key);
+      const eventDots = events.map(ev =>
+        `<span class="mini-ev-dot" style="background:${ev.color || '#7170ff'}" title="${esc(ev.title)}"></span>`
+      ).join('');
+      days.push(`<div class="mini-day${isToday ? ' mini-today' : ''}">
+        <span class="mini-day-name">${this.DAYS[d.getDay()].slice(0,2)}</span>
+        <span class="mini-day-num">${d.getDate()}</span>
+        <div class="mini-day-dots">${eventDots || '<span class="mini-ev-none">-</span>'}</div>
+      </div>`);
+    }
+    container.innerHTML = `<div class="mini-week">${days.join('')}</div>`;
+  },
+
   render() {
     this.updateHeader();
     document.getElementById('calToggleCron').checked = this.showCron;

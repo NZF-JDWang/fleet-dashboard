@@ -88,9 +88,46 @@ body{
 .page.active{display:block}
 
 /* DASHBOARD GRID */
-.dashboard-grid{display:flex;gap:20px;min-width:1100px}
-.left-col{flex:1;min-width:0;display:flex;flex-direction:column;gap:16px}
-.right-col{width:340px;flex-shrink:0;display:flex;flex-direction:column;gap:16px}
+.dashboard-grid{display:flex;flex-direction:column;gap:20px;min-width:900px}
+
+/* Dashboard widgets row */
+.dashboard-widgets{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.dashboard-widget{min-height:200px;max-height:320px;overflow:hidden}
+.panel-link{font-size:12px;color:var(--text-quiet);text-decoration:none;transition:color .15s}
+.panel-link:hover{color:var(--accent)}
+
+/* Dashboard bottom row */
+.dashboard-row{display:flex;gap:20px}
+.dashboard-row .signals-panel{flex:1;min-width:0}
+.dashboard-row .panel:last-child{width:340px;flex-shrink:0}
+
+/* Kanban mini */
+.kanban-mini{padding:8px 12px;overflow-y:auto;max-height:240px}
+.mini-task{display:flex;align-items:center;gap:8px;padding:5px 0;border-bottom:1px solid var(--border-subtle);font-size:11px}
+.mini-task:last-child{border-bottom:none}
+.mini-dot{width:6px;height:6px;border-radius:50%;flex-shrink:0}
+.mini-title{flex:1;color:var(--text-secondary);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.mini-title.pri-high{color:var(--danger)}
+.mini-title.pri-critical{color:var(--danger);font-weight:600}
+.mini-col{font-size:10px;color:var(--text-quiet);text-transform:capitalize;flex-shrink:0}
+.mini-more{padding:6px 0 0;font-size:11px}
+.mini-more a{color:var(--text-quiet);text-decoration:none}
+.mini-more a:hover{color:var(--accent)}
+.mini-empty{text-align:center;color:var(--text-quiet);font-size:12px;padding:28px 0}
+.mini-empty a{color:var(--accent)}
+
+/* Calendar mini week */
+.calendar-mini{padding:12px;overflow:hidden}
+.mini-week{display:grid;grid-template-columns:repeat(7,1fr);gap:4px}
+.mini-day{text-align:center;padding:8px 2px;border-radius:var(--radius-md);background:var(--bg-surface);transition:background .15s}
+.mini-day:hover{background:var(--bg-elevated)}
+.mini-day.mini-today{background:rgba(113,112,255,0.1);border:1px solid rgba(113,112,255,0.2)}
+.mini-day-name{display:block;font-size:9px;color:var(--text-quiet);text-transform:uppercase;letter-spacing:0.3px}
+.mini-day-num{display:block;font-size:15px;font-weight:600;color:var(--text-primary);margin:2px 0}
+.mini-today .mini-day-num{color:var(--accent)}
+.mini-day-dots{display:flex;justify-content:center;gap:2px;margin-top:4px;min-height:8px}
+.mini-ev-dot{width:5px;height:5px;border-radius:50%;display:inline-block}
+.mini-ev-none{font-size:9px;color:var(--text-quiet);line-height:1}
 
 /* PANELS */
 .panel{background:var(--bg-panel);border:1px solid var(--border-subtle);border-radius:var(--radius-lg);overflow:hidden}
@@ -99,32 +136,7 @@ body{
 .legend{display:flex;gap:12px;font-size:11px;color:var(--text-quiet)}
 .legend b{font-weight:600}
 
-/* GRAPH */
-.graph-panel{min-height:340px}
-.canvas-wrap{position:relative;width:100%;height:340px;background:radial-gradient(ellipse at center, rgba(113,112,255,0.04) 0%, transparent 70%)}
-#graphCanvas{display:block;width:100%;height:100%}
-.graph-tooltip{position:absolute;background:var(--bg-elevated);border:1px solid var(--border-standard);border-radius:var(--radius-md);padding:10px 14px;font-size:12px;pointer-events:none;opacity:0;transition:opacity .15s;z-index:10;box-shadow:0 8px 24px rgba(0,0,0,0.4)}
-.graph-tooltip.show{opacity:1}
-.graph-tooltip .tt-name{font-weight:600;font-size:13px}
-.graph-tooltip .tt-role{color:var(--text-muted);font-size:11px;margin-top:2px}
-.graph-tooltip .tt-task{color:var(--text-quiet);font-size:11px;margin-top:4px;max-width:180px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-
-/* AGENT CARDS */
-.agent-cards{display:grid;grid-template-columns:repeat(5,1fr);gap:10px}
-.agent-card{background:var(--bg-panel);border:1px solid var(--border-subtle);border-radius:var(--radius-lg);padding:14px;cursor:pointer;transition:border-color .15s,box-shadow .15s}
-.agent-card:hover{border-color:var(--border-standard)}
-.agent-card.highlighted{border-color:var(--accent);box-shadow:0 0 12px rgba(113,112,255,0.15)}
-.card-top{display:flex;align-items:center;gap:10px;margin-bottom:10px}
-.card-avatar{width:36px;height:36px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:15px;color:#fff;flex-shrink:0}
-.card-info{flex:1;min-width:0}
-.card-name{font-size:13px;font-weight:600;color:var(--text-primary)}
-.card-role{font-size:11px;color:var(--text-muted)}
-.card-status{display:flex;align-items:center;gap:5px;font-size:11px;color:var(--text-muted);margin-top:6px}
-.card-status-dot{width:6px;height:6px;border-radius:50%}
-.card-status-dot.online{background:var(--success);box-shadow:0 0 4px var(--success)}
-.card-status-dot.busy{background:var(--warning);box-shadow:0 0 4px var(--warning)}
-.card-status-dot.offline{background:var(--danger)}
-.card-task{font-size:11px;color:var(--text-quiet);margin-top:8px;padding:6px 8px;background:var(--bg-surface);border-radius:4px;border-left:2px solid transparent;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+/* Agent cards removed from dashboard — sidebar nav + status bar cover agent visibility */
 
 /* SIGNALS */
 .live-badge{font-size:10px;font-weight:600;color:var(--success);background:rgba(16,185,129,0.1);padding:3px 8px;border-radius:10px;letter-spacing:0.5px}

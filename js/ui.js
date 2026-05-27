@@ -49,32 +49,6 @@ const UI = {
     clockEl.classList.toggle('day', isDay);
   },
 
-  // ===== AGENT CARDS =====
-  renderAgentCards() {
-    const container = document.getElementById('agentCards');
-    container.innerHTML = AGENTS.map(agent => {
-      const s = State.agents[agent.id];
-      const statusClass = s?.status || 'unknown';
-      const statusLabel = statusClass === 'online' ? 'Online' : statusClass === 'busy' ? 'Busy' : statusClass === 'offline' ? 'Offline' : 'Unknown';
-      return `
-        <div class="agent-card" data-agent="${agent.id}" onclick="App.selectAgent('${agent.id}')">
-          <div class="card-top">
-            <div class="card-avatar" style="background:${agent.color}">${agent.avatar}</div>
-            <div class="card-info">
-              <div class="card-name">${agent.name}</div>
-              <div class="card-role">${agent.role}</div>
-            </div>
-          </div>
-          <div class="card-status">
-            <span class="card-status-dot ${statusClass}"></span>${statusLabel}
-          </div>
-          <div class="card-task" style="border-left-color:${agent.color}">
-            ${s?.task || 'Idle'}
-          </div>
-        </div>`;
-    }).join('');
-  },
-
   // ===== SIGNALS =====
   renderSignals() {
     const list = document.getElementById('signalsList');
@@ -120,12 +94,21 @@ const UI = {
     `;
   },
 
+  // ===== DASHBOARD WIDGETS =====
+  renderDashboardWidgets() {
+    // Only render when dashboard page is active
+    const dash = document.getElementById('page-dashboard');
+    if (!dash || !dash.classList.contains('active')) return;
+    Kanban.renderMini();
+    Calendar.renderMiniWeek();
+  },
+
   // ===== REFRESH ALL =====
   refreshAll() {
     this.updateClock();
     this.updateStatusBar();
-    this.renderAgentCards();
     this.renderSignals();
     this.renderPulseMetrics();
+    this.renderDashboardWidgets();
   },
 };

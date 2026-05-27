@@ -14,15 +14,6 @@ const App = {
     Ticker.init();
     Feed.init();
 
-    // Canvas graph
-    const canvas = document.getElementById('graphCanvas');
-    this.graph = new FleetGraph(canvas);
-    this.graph.onNodeClick = (node) => this.selectAgent(node.id);
-    this.graph.onNodeHover = (node) => {
-      // Could render tooltip here
-    };
-    this.graph.start();
-
     // Hash routing
     this.routeFromHash();
     window.addEventListener('hashchange', () => this.routeFromHash());
@@ -109,6 +100,8 @@ const App = {
       if (!this._calendarInit) { Calendar.init(); this._calendarInit = true; }
       else Calendar.render();
     }
+    // Refresh dashboard widgets on return to dashboard
+    if (page === 'dashboard') UI.renderDashboardWidgets();
     // Init vault if navigating there
     if (page === 'vault') {
       if (!this._vaultInit) { VaultBrowser.init(); this._vaultInit = true; }
@@ -128,10 +121,6 @@ const App = {
 
   selectAgent(agentId) {
     State.selectedAgent = agentId;
-    // Highlight agent card
-    document.querySelectorAll('.agent-card').forEach(card => {
-      card.classList.toggle('highlighted', card.dataset.agent === agentId);
-    });
     // Update nav
     document.querySelectorAll('.nav-agent').forEach(item => {
       item.classList.toggle('active', item.dataset.agent === agentId);
@@ -139,7 +128,7 @@ const App = {
     // Reset after 5s
     clearTimeout(this._agentHighlightTimeout);
     this._agentHighlightTimeout = setTimeout(() => {
-      document.querySelectorAll('.agent-card.highlighted, .nav-agent.active').forEach(el => el.classList.remove('highlighted', 'active'));
+      document.querySelectorAll('.nav-agent.active').forEach(el => el.classList.remove('active'));
     }, 5000);
   },
 

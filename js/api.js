@@ -5,12 +5,15 @@ const ApiClient = {
   async _fetch(agentId, path, options = {}) {
     const agent = AGENTS_BY_ID[agentId];
     if (!agent) throw new Error(`Unknown agent: ${agentId}`);
-    const base = getApiBase(agent.port);
+    const base = options.skipV1Prefix
+      ? `${API_BASE_URL}:${agent.port}`
+      : getApiBase(agent.port);
     const url = `${base}${path}`;
+    const { skipV1Prefix, ...fetchOpts } = options;
     const start = performance.now();
     try {
       const res = await fetch(url, {
-        ...options,
+        ...fetchOpts,
         headers: {
           'Authorization': `Bearer ${API_KEY}`,
           'Content-Type': 'application/json',
@@ -25,9 +28,9 @@ const ApiClient = {
     }
   },
 
-  // Health check — returns agent status
+  // Health check — returns agent status (not under /v1 prefix)
   async getHealth(agentId) {
-    const res = await this._fetch(agentId, '/health/detailed');
+    const res = await this._fetch(agentId, '/health', { skipV1Prefix: true });
     if (res.ok) {
       return { status: 'online', latency: res.latency, ...res.data };
     }
