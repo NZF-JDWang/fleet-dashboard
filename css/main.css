@@ -482,6 +482,39 @@ body{
 .synth-body strong{color:var(--text-primary)}
 .response-source{font-size:10px;color:var(--text-quiet);font-family:'JetBrains Mono',monospace}
 
+/* ---- Briefing Section ---- */
+.briefing-section{margin-bottom:8px}
+
+/* ---- Typing Indicator ---- */
+.typing-indicator{display:flex;align-items:center;gap:6px;padding:12px 16px;font-size:12px;color:var(--text-muted);font-family:'JetBrains Mono',monospace;animation:slideIn .2s ease-out}
+.typing-dot{width:6px;height:6px;border-radius:50%;background:var(--accent);animation:typingPulse 1.4s infinite ease-in-out}
+.typing-dot:nth-child(2){animation-delay:0.2s}
+.typing-dot:nth-child(3){animation-delay:0.4s}
+@keyframes typingPulse {0%,80%,100%{opacity:0.3;transform:scale(0.8)}40%{opacity:1;transform:scale(1.1)}}
+
+/* ---- Consensus Bar Animation ---- */
+.consensus-bar{padding:16px;background:var(--bg-surface);border-radius:var(--radius-md);margin-top:16px;border:1px solid var(--border-subtle)}
+.consensus-result{font-size:14px;font-weight:700;margin-bottom:4px}
+.consensus-label{font-size:11px;color:var(--text-quiet)}
+.poll-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:12px}
+.poll-agent{text-align:center;padding:16px 8px;background:var(--bg-surface);border-radius:var(--radius-md);border:1px solid var(--border-subtle);transition:border-color .2s}
+.poll-agent:hover{border-color:var(--border-standard)}
+.poll-avatar{width:36px;height:36px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:15px;font-weight:700;color:#fff;margin:0 auto 8px}
+.poll-name{font-size:11px;font-weight:600;color:var(--text-secondary);margin-bottom:8px}
+.poll-vote{font-size:20px;min-height:28px;display:flex;align-items:center;justify-content:center}
+
+/* ---- View Transitions ---- */
+.page{display:none;animation:viewSlideIn .25s ease-out}
+.page.active{display:block}
+@keyframes viewSlideIn{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
+
+/* ---- Kanban Sparkline Mini-Stat ---- */
+.kanban-stat{font-size:10px;color:var(--text-quiet);font-family:'JetBrains Mono',monospace;margin-left:auto}
+
+/* ---- NZT Clock Day/Night Indicator ---- */
+.clock.night{color:var(--sven)}
+.clock.day{color:var(--margot)}
+
 /* ============================================
    AGENTMAIL INBOX (on agent detail page)
    ============================================ */

@@ -40,12 +40,14 @@ const Council = {
     const results = document.getElementById('councilResults');
     results.innerHTML = '';
     this.transcript = [{ phase: 'proposal', content: proposal, time: new Date().toISOString() }];
+    Council.showTypingStatus('Starting debate with all agents...');
 
     if (mode === 'poll') {
       await this.renderPoll(proposal);
     } else {
       await this.renderDebate(proposal);
     }
+    Council.hideTypingStatus();
   },
 
   async startDeliberation() {
@@ -58,8 +60,14 @@ const Council = {
     results.innerHTML = '';
     this.transcript = [{ phase: 'proposal', content: proposal, time: new Date().toISOString() }];
 
+    // ---- Progressive Mode: Klaus + Yuki research briefing ----
+    this.showTypingStatus('Klaus & Yuki: researching evidence...');
+    const briefing = await this.runResearchBriefing(proposal);
+
     // ---- Round 1: Initial Positions ----
+    this.updateTypingStatus('Round 1: Gathering initial positions...');
     await this.renderRound(proposal, 'initial');
+    this.updateTypingStatus('Round 2: Processing rebuttals...');
 
     // ---- Round 2: Each agent sees all Round 1 responses and refines ----
     await this.renderRoundHeader('rebuttal');
@@ -100,12 +108,55 @@ const Council = {
     }
 
     // ---- Consensus Synthesis ----
+    this.updateTypingStatus('Synthesizing consensus...');
     await this.renderRoundHeader('synthesis');
     await this.synthesizeConsensus(proposal, results);
+    this.hideTypingStatus();
     this.debateActive = false;
 
     // Auto-save if enabled
     if (AUTO_SAVE_TRANSCRIPTS) await this.saveTranscript();
+  },
+
+  async runResearchBriefing(proposal) {
+    const results = document.getElementById('councilResults');
+
+    // Parallel: Klaus (research) + Yuki (tech feasibility)
+    const [klausResult, yukiResult] = await Promise.all([
+      ApiClient.sendChat('klaus', [
+        { role: 'system', content: `You are Klaus, Research Lead at BlacksiteLab. Summarize relevant research, evidence, and best practices for this topic. Be concise (2-4 bullet points).` },
+        { role: 'user', content: `Research briefing request: "${proposal}". What does the literature, data, or precedent say?` },
+      ]),
+      ApiClient.sendChat('yuki', [
+        { role: 'system', content: `You are Yuki, Infra Engineer at BlacksiteLab. Assess technical feasibility, infrastructure implications, and security concerns. Be concise (2-4 bullet points).` },
+        { role: 'user', content: `Tech feasibility assessment: "${proposal}". What infra, security, or ops concerns exist?` },
+      ]),
+    ]);
+
+    const klausContent = klausResult.status === 'ok' ? klausResult.content : 'Research: multiple precedents exist; recommended to standardize fleet-wide.';
+    const yukiContent = yukiResult.status === 'ok' ? yukiResult.content : 'Tech: feasible with current stack; monitor resource usage.';
+
+    this.transcript.push({
+      phase: 'briefing', agent: 'klaus', name: 'Klaus', role: 'Research Lead',
+      content: klausContent, latency: klausResult.latency || 0,
+      live: klausResult.status === 'ok', time: new Date().toISOString(),
+    });
+    this.transcript.push({
+      phase: 'briefing', agent: 'yuki', name: 'Yuki', role: 'Infra Engineer',
+      content: yukiContent, latency: yukiResult.latency || 0,
+      live: yukiResult.status === 'ok', time: new Date().toISOString(),
+    });
+
+    // Render briefing section
+    const briefingEl = document.createElement('div');
+    briefingEl.className = 'briefing-section';
+    briefingEl.innerHTML = `<div class="council-round-header"><span class="round-marker">◆</span> Research Briefing</div>`;
+    results.appendChild(briefingEl);
+
+    this.renderAgentResponse(results, AGENTS_BY_ID.klaus, klausContent, klausResult.latency || 0, klausResult.status === 'ok', 'briefing');
+    this.renderAgentResponse(results, AGENTS_BY_ID.yuki, yukiContent, yukiResult.latency || 0, yukiResult.status === 'ok', 'briefing');
+
+    return { klaus: klausContent, yuki: yukiContent };
   },
 
   async renderRound(proposal, phase) {
@@ -375,24 +426,96 @@ const Council = {
   },
 
   buildTranscriptMarkdown() {
-    const lines = ['# Fleet Council Transcript\n'];
-    for (const entry of this.transcript) {
-      if (entry.phase === 'proposal') {
-        lines.push(`## Proposal\n> ${entry.content}\n`);
-      } else if (entry.phase === 'round1') {
-        const src = entry.live ? 'API' : 'simulated';
-        lines.push(`### ${entry.name} — ${entry.role} (Round 1) [${src}]\n${entry.content}\n`);
-      } else if (entry.phase === 'round2') {
-        const src = entry.live ? 'API' : 'simulated';
-        lines.push(`### ${entry.name} — ${entry.role} (Round 2) [${src}]\n${entry.content}\n`);
-      } else if (entry.phase === 'synthesis') {
-        lines.push(`## Consensus Synthesis — by ${entry.name}\n${entry.content}\n`);
-      } else if (entry.phase === 'poll') {
-        lines.push(`- **${entry.name}:** ${entry.vote} ${entry.live ? '' : '(sim)'}`);
+    const proposal = this.transcript.find(t => t.phase === 'proposal');
+    const title = proposal
+      ? proposal.content.slice(0, 60).replace(/[^a-zA-Z0-9 ]/g, '')
+      : 'council-session';
+    const now = new Date().toISOString();
+    const lines = [];
+
+    // YAML frontmatter for Margot's vault schema
+    lines.push('---');
+    lines.push('created: ' + now.slice(0, 10));
+    lines.push('type: council-transcript');
+    lines.push("tags: [council, fleet, transcript]");
+    lines.push(`aliases: ["Council: ${title}"]`);
+    lines.push(`summary: "${title}"`);
+    lines.push('agents: [claire, sven, yuki, margot, klaus]');
+    lines.push('---');
+    lines.push('');
+
+    lines.push(`# Fleet Council Transcript\n`);
+    lines.push(`**Session:** ${now}`);
+    lines.push(`**Participants:** Claire, Sven, Yuki, Margot, Klaus\n`);
+
+    // Synthesis block goes FIRST (decision brief at top)
+    const synthEntry = this.transcript.find(t => t.phase === 'synthesis');
+    if (synthEntry) {
+      lines.push('> [!abstract]+ Decision Brief (Synthesized by Claire)');
+      lines.push('> ' + synthEntry.content.replace(/\n/g, '\n> '));
+      lines.push('');
+    }
+
+    if (proposal) {
+      lines.push(`## Proposal\n`);
+      lines.push('> [!question] Proposal');
+      lines.push('> ' + proposal.content.replace(/\n/g, '\n> '));
+      lines.push('');
+    }
+
+    // Briefing — Klaus + Yuki research
+    const briefing = this.transcript.filter(t => t.phase === 'briefing');
+    if (briefing.length) {
+      lines.push('## Research Briefing\n');
+      for (const entry of briefing) {
+        const id = (entry.agent || entry.name || '').toLowerCase();
+        lines.push(`> [!${id}]+ ${entry.name} — ${entry.role}`);
+        lines.push('> ' + entry.content.replace(/\n/g, '\n> '));
+        lines.push('');
       }
     }
-    if (this.transcript.some(t => t.phase === 'poll')) lines.push('');
-    lines.push(`---\n*Session: ${new Date().toISOString()}*`);
+
+    // Round 1 — each agent as an Obsidian callout
+    const round1 = this.transcript.filter(t => t.phase === 'round1');
+    if (round1.length) {
+      lines.push('## Round 1 — Initial Positions\n');
+      for (const entry of round1) {
+        const src = entry.live ? '⚡ API' : '📋 simulated';
+        const id = (entry.agent || entry.name || '').toLowerCase();
+        lines.push(`> [!${id}]+ ${entry.name} — ${entry.role} [${src}]`);
+        lines.push('> ' + entry.content.replace(/\n/g, '\n> '));
+        lines.push('');
+      }
+    }
+
+    // Round 2 — rebuttal
+    const round2 = this.transcript.filter(t => t.phase === 'round2');
+    if (round2.length) {
+      lines.push('## Round 2 — Rebuttal & Deliberation\n');
+      for (const entry of round2) {
+        const src = entry.live ? '⚡ API' : '📋 simulated';
+        const id = (entry.agent || entry.name || '').toLowerCase();
+        lines.push(`> [!${id}]+ ${entry.name} — ${entry.role} [${src}]`);
+        lines.push('> ' + entry.content.replace(/\n/g, '\n> '));
+        lines.push('');
+      }
+    }
+
+    // Poll results as summary
+    const pollEntries = this.transcript.filter(t => t.phase === 'poll');
+    if (pollEntries.length) {
+      lines.push('## Quick Poll Results\n');
+      for (const entry of pollEntries) {
+        const emoji = entry.vote === 'agree' ? '✅' : entry.vote === 'disagree' ? '❌' : '🤷';
+        const sim = entry.live ? '' : ' (sim)';
+        lines.push(`- ${emoji} **${entry.name}:** ${entry.vote}${sim}`);
+      }
+      lines.push('');
+    }
+
+    lines.push('---');
+    lines.push(`*Session: ${now}*`);
+    lines.push(`*Generated by BlacksiteLab Fleet Command*`);
     return lines.join('\n');
   },
 
@@ -425,6 +548,35 @@ const Council = {
     toast.style.opacity = '1';
     clearTimeout(this._toastTimer);
     this._toastTimer = setTimeout(() => { toast.style.opacity = '0'; }, 2500);
+  },
+
+  // Typing indicator helpers
+  showTypingStatus(msg) {
+    const results = document.getElementById('councilResults');
+    let el = document.getElementById('typingIndicator');
+    if (!el) {
+      el = document.createElement('div');
+      el.id = 'typingIndicator';
+      el.className = 'typing-indicator';
+      results.appendChild(el);
+    }
+    el.innerHTML = `<span class="typing-dot"></span><span class="typing-dot"></span><span class="typing-dot"></span> ${msg}`;
+    el.style.display = 'flex';
+    results.scrollTop = results.scrollHeight;
+  },
+
+  updateTypingStatus(msg) {
+    const el = document.getElementById('typingIndicator');
+    if (el) {
+    el.innerHTML = `<span class="typing-dot"></span><span class="typing-dot"></span><span class="typing-dot"></span> ${msg}`;
+      const results = document.getElementById('councilResults');
+      results.scrollTop = results.scrollHeight;
+    }
+  },
+
+  hideTypingStatus() {
+    const el = document.getElementById('typingIndicator');
+    if (el) el.style.display = 'none';
   },
 };
 

@@ -19,6 +19,18 @@ const Kanban = {
       const existingCount = header.querySelector('.kanban-col-count');
       if (existingCount) existingCount.remove();
       header.insertAdjacentHTML('beforeend', `<span class="kanban-col-count">${tasks.length}</span>`);
+
+      // Sparkline mini-stat: priority breakdown
+      const existingStat = header.querySelector('.kanban-stat');
+      if (existingStat) existingStat.remove();
+      const high = tasks.filter(t => t.priority === 'high').length;
+      const med = tasks.filter(t => t.priority === 'medium').length;
+      if (high + med > 0) {
+        const parts = [];
+        if (high) parts.push(`🔺${high}`);
+        if (med) parts.push(`🔹${med}`);
+        header.insertAdjacentHTML('beforeend', `<span class="kanban-stat">${parts.join(' ')}</span>`);
+      }
     });
 
     // Rebind drag/drop

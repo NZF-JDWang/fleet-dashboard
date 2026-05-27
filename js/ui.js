@@ -38,8 +38,15 @@ const UI = {
     const now = new Date();
     // NZT = UTC+12
     const nzt = new Date(now.getTime() + (12 * 60 * 60 * 1000));
-    document.getElementById('nztClock').textContent =
+    const clockEl = document.getElementById('nztClock');
+    clockEl.textContent =
       nzt.toLocaleTimeString('en-NZ', { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false }) + ' NZT';
+
+    // Day/night indicator: NZT 06:00-18:00 = day, otherwise night
+    const nztHour = nzt.getUTCHours();
+    const isDay = nztHour >= 6 && nztHour < 18;
+    clockEl.classList.toggle('night', !isDay);
+    clockEl.classList.toggle('day', isDay);
   },
 
   // ===== AGENT CARDS =====
