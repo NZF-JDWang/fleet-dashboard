@@ -25,6 +25,10 @@
       <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><rect x="1" y="2" width="4" height="12" rx="1" stroke="currentColor" stroke-width="1.3"/><rect x="7" y="5" width="4" height="9" rx="1" stroke="currentColor" stroke-width="1.3"/><rect x="13" y="1" width="3" height="13" rx="1" stroke="currentColor" stroke-width="1.3"/></svg>
       Kanban Board
     </a>
+    <a class="nav-item" href="#calendar">
+      <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><rect x="1.5" y="2.5" width="13" height="12" rx="2" stroke="currentColor" stroke-width="1.3"/><path d="M1.5 6h13M5 1v3M11 1v3" stroke="currentColor" stroke-width="1.3"/></svg>
+      Calendar
+    </a>
     <a class="nav-item" href="#council">
       <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><circle cx="4" cy="5" r="2" stroke="currentColor" stroke-width="1.3"/><circle cx="12" cy="5" r="2" stroke="currentColor" stroke-width="1.3"/><circle cx="8" cy="5" r="2" stroke="currentColor" stroke-width="1.3"/><path d="M1 13c0-2 1.5-3 3-3s3 1 3 3" stroke="currentColor" stroke-width="1.3"/><path d="M9 13c0-2 1.5-3 3-3s3 1 3 3" stroke="currentColor" stroke-width="1.3"/></svg>
       Council Chamber
@@ -130,6 +134,40 @@
       </div>
     </div>
 
+    <!-- CALENDAR PAGE -->
+    <div class="page" id="page-calendar">
+      <div class="calendar-toolbar">
+        <div class="cal-nav">
+          <button class="btn btn-icon" id="calPrevBtn" title="Previous">←</button>
+          <button class="btn btn-outline" id="calTodayBtn">Today</button>
+          <button class="btn btn-icon" id="calNextBtn" title="Next">→</button>
+          <span class="cal-label" id="calLabel">May 2026</span>
+        </div>
+        <div class="cal-views">
+          <button class="cal-view-btn active" data-view="month">Month</button>
+          <button class="cal-view-btn" data-view="week">Week</button>
+          <button class="cal-view-btn" data-view="day">Day</button>
+        </div>
+        <div class="cal-overlays">
+          <label class="toggle-switch cal-toggle" title="Show cron jobs">
+            <input type="checkbox" id="calToggleCron">
+            <span class="toggle-slider"></span>
+            ⟳ Cron
+          </label>
+          <label class="toggle-switch cal-toggle" title="Show kanban deadlines">
+            <input type="checkbox" id="calToggleKanban">
+            <span class="toggle-slider"></span>
+            ▸ Kanban
+          </label>
+        </div>
+        <button class="btn btn-primary cal-add-btn" onclick="Calendar.openModal()">+ Event</button>
+      </div>
+      <div class="cal-month" id="calMonthGrid">
+        <div class="cal-month-header" id="calMonthHeader"></div>
+        <div class="cal-month-body" id="calMonthBody"></div>
+      </div>
+    </div>
+
     <!-- COUNCIL PAGE -->
     <div class="page" id="page-council">
       <div class="council-layout">
@@ -148,18 +186,105 @@
       </div>
     </div>
 
+    <!-- AGENT DETAIL PAGE -->
+    <div class="page" id="page-agent-detail">
+      <div id="agentDetailContent"></div>
+    </div>
+
     <!-- SETTINGS PAGE -->
-    <div class="page" id="page-settings" style="padding:24px;max-width:600px;">
-      <h2>Settings</h2>
-      <div class="settings-group">
-        <label>API Key</label>
-        <input type="password" id="settingsApiKey" placeholder="change-me-local-dev" value="change-me-local-dev">
+    <div class="page" id="page-settings">
+      <div class="settings-layout">
+        <!-- Fleet Section -->
+        <div class="panel settings-section">
+          <div class="panel-header"><span class="panel-title">⚡ Fleet Connection</span></div>
+          <div class="settings-body">
+            <div class="form-group">
+              <label>API Key</label>
+              <input type="password" id="settingsApiKey" placeholder="Your fleet API key">
+            </div>
+            <div class="form-group">
+              <label>API Base URL</label>
+              <input type="text" id="settingsApiBase" placeholder="http://localhost">
+            </div>
+            <div class="form-row">
+              <div class="form-group">
+                <label>Polling Interval (seconds)</label>
+                <input type="number" id="settingsPollInterval" min="2" max="60" value="5">
+              </div>
+              <div class="form-group">
+                <label>Pause Polling</label>
+                <label class="toggle-switch" style="margin-top:8px">
+                  <input type="checkbox" id="settingsPausePolling">
+                  <span class="toggle-slider"></span>
+                </label>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Vault Section -->
+        <div class="panel settings-section">
+          <div class="panel-header"><span class="panel-title">📓 Obsidian Vault</span></div>
+          <div class="settings-body">
+            <div class="form-group">
+              <label>Vault Base Path</label>
+              <input type="text" id="settingsVaultBase" placeholder="/home/jd/obsidian-vaults/BlacksiteLabVault/">
+            </div>
+            <div class="form-row">
+              <div class="form-group">
+                <label>Council Transcript Path (relative)</label>
+                <input type="text" id="settingsCouncilPath" placeholder="04_PROJECTS/fleet-council/">
+              </div>
+              <div class="form-group">
+                <label>Kanban Mirror Path (relative)</label>
+                <input type="text" id="settingsKanbanPath" placeholder="04_PROJECTS/fleet-kanban/">
+              </div>
+            </div>
+            <div class="form-group">
+              <label class="toggle-switch">
+                <input type="checkbox" id="settingsAutoSave">
+                <span class="toggle-slider"></span>
+                Auto-Save Transcripts to Vault
+              </label>
+            </div>
+          </div>
+        </div>
+
+        <!-- Agent Ports Section -->
+        <div class="panel settings-section">
+          <div class="panel-header"><span class="panel-title">🔌 Agent Ports</span></div>
+          <div class="settings-body">
+            <div class="ports-grid">
+              <div class="form-group">
+                <label class="port-label" style="--agent-color:var(--claire)">Claire</label>
+                <input type="number" id="settingsPort-claire" min="1024" max="65535" value="8642">
+              </div>
+              <div class="form-group">
+                <label class="port-label" style="--agent-color:var(--sven)">Sven</label>
+                <input type="number" id="settingsPort-sven" min="1024" max="65535" value="8643">
+              </div>
+              <div class="form-group">
+                <label class="port-label" style="--agent-color:var(--yuki)">Yuki</label>
+                <input type="number" id="settingsPort-yuki" min="1024" max="65535" value="8644">
+              </div>
+              <div class="form-group">
+                <label class="port-label" style="--agent-color:var(--margot)">Margot</label>
+                <input type="number" id="settingsPort-margot" min="1024" max="65535" value="8645">
+              </div>
+              <div class="form-group">
+                <label class="port-label" style="--agent-color:var(--klaus)">Klaus</label>
+                <input type="number" id="settingsPort-klaus" min="1024" max="65535" value="8646">
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Actions -->
+        <div class="settings-actions">
+          <button class="btn btn-primary" id="btnSaveSettings">💾 Save Settings</button>
+          <button class="btn btn-outline" id="btnResetSettings">↺ Reset to Defaults</button>
+        </div>
       </div>
-      <div class="settings-group">
-        <label>Polling Interval (seconds)</label>
-        <input type="number" id="settingsPollInterval" min="2" max="60" value="5">
-      </div>
-      <button class="btn btn-primary" id="btnSaveSettings">Save Settings</button>
     </div>
   </main>
 
@@ -202,6 +327,58 @@
   </div>
 </div>
 
+<!-- CALENDAR EVENT MODAL -->
+<div class="modal" id="calModal">
+  <div class="modal-backdrop" id="calModalBackdrop"></div>
+  <div class="modal-panel">
+    <h3 id="calModalTitle">Add Event</h3>
+    <div class="form-group"><label>Title</label><input type="text" id="calEventTitle" placeholder="Event title..."></div>
+    <div class="form-group"><label>Description</label><textarea id="calEventDesc" rows="2" placeholder="Details..."></textarea></div>
+    <div class="form-row">
+      <div class="form-group"><label>Start</label><input type="datetime-local" id="calEventStart"></div>
+      <div class="form-group"><label>End</label><input type="datetime-local" id="calEventEnd"></div>
+    </div>
+    <div class="form-row">
+      <div class="form-group"><label>Color</label><input type="color" id="calEventColor" value="#7170ff" style="height:36px"></div>
+      <div class="form-group"><label class="toggle-switch cal-inline-toggle">
+        <input type="checkbox" id="calEventAllDay">
+        <span class="toggle-slider"></span>
+        All Day
+      </label></div>
+    </div>
+    <div class="form-group">
+      <label class="toggle-switch cal-inline-toggle">
+        <input type="checkbox" id="calHasAgentTask">
+        <span class="toggle-slider"></span>
+        Schedule as Agent Task
+      </label>
+    </div>
+    <div id="calAgentTaskFields" style="display:none">
+      <div class="form-group"><label>Agent</label>
+        <select id="calAgentSelect">
+          <option value="">Select agent...</option>
+          <option value="claire">Claire</option>
+          <option value="sven">Sven</option>
+          <option value="yuki">Yuki</option>
+          <option value="margot">Margot</option>
+          <option value="klaus">Klaus</option>
+        </select>
+      </div>
+      <div class="form-group"><label>Prompt (self-contained)</label>
+        <textarea id="calAgentPrompt" rows="3" placeholder="Task instructions for the agent..." oninput="this.style.height='';this.style.height=this.scrollHeight+'px'"></textarea>
+      </div>
+      <div class="form-group"><label>Deliver To</label>
+        <input type="text" id="calAgentDeliver" value="origin" placeholder="origin">
+      </div>
+    </div>
+    <div class="modal-actions">
+      <button class="btn btn-primary" id="calSaveBtn">Save Event</button>
+      <button class="btn btn-danger" id="calDeleteBtn" style="display:none">Delete</button>
+      <button class="btn btn-outline" id="calCancelBtn">Cancel</button>
+    </div>
+  </div>
+</div>
+
 <script src="js/config.js"></script>
 <script src="js/api.js"></script>
 <script src="js/state.js"></script>
@@ -209,6 +386,8 @@
 <script src="js/ui.js"></script>
 <script src="js/kanban.js"></script>
 <script src="js/council.js"></script>
+<script src="js/calendar.js"></script>
+<script src="js/agent-detail.js"></script>
 <script src="js/app.js"></script>
 
 </body>

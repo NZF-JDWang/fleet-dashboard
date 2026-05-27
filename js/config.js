@@ -12,10 +12,16 @@ const AGENTS = [
 const AGENTS_BY_ID = Object.fromEntries(AGENTS.map(a => [a.id, a]));
 
 let API_KEY = 'change-me-local-dev';
+let API_BASE_URL = 'http://localhost';
 let POLL_INTERVAL = 5000;
+let VAULT_BASE = '/home/jd/obsidian-vaults/BlacksiteLabVault/';
+let COUNCIL_TRANSCRIPT_PATH = '04_PROJECTS/fleet-council/';
+let KANBAN_MIRROR_PATH = '04_PROJECTS/fleet-kanban/';
+let AUTO_SAVE_TRANSCRIPTS = true;
+let PAUSE_POLLING = false;
 
 function getApiBase(port) {
-  return `http://localhost:${port}/v1`;
+  return `${API_BASE_URL}:${port}/v1`;
 }
 
 // Demo signals for when APIs are unreachable

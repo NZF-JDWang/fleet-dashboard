@@ -31,7 +31,7 @@ const App = {
         if (item.getAttribute('href').startsWith('#agent/')) {
           e.preventDefault();
           const agentId = item.getAttribute('href').replace('#agent/', '');
-          this.selectAgent(agentId);
+          window.location.hash = '#agent/' + agentId;
           return;
         }
       });
@@ -40,20 +40,17 @@ const App = {
     // Refresh button
     document.getElementById('btnRefresh').addEventListener('click', () => this.pollNow());
 
-    // Settings
-    document.getElementById('btnSaveSettings').addEventListener('click', () => {
-      API_KEY = document.getElementById('settingsApiKey').value.trim();
-      POLL_INTERVAL = parseInt(document.getElementById('settingsPollInterval').value) * 1000;
-      localStorage.setItem('fleet-api-key', API_KEY);
-      localStorage.setItem('fleet-poll-interval', POLL_INTERVAL);
-      this.restartPolling();
+    // Settings — Save
+    document.getElementById('btnSaveSettings').addEventListener('click', () => this.saveSettings());
+
+    // Settings — Reset to Defaults
+    document.getElementById('btnResetSettings').addEventListener('click', () => {
+      this.resetSettingsToDefaults();
+      this.saveSettings();
     });
 
-    // Load saved settings
-    const savedKey = localStorage.getItem('fleet-api-key');
-    if (savedKey) { API_KEY = savedKey; document.getElementById('settingsApiKey').value = savedKey; }
-    const savedPoll = localStorage.getItem('fleet-poll-interval');
-    if (savedPoll) { POLL_INTERVAL = parseInt(savedPoll); document.getElementById('settingsPollInterval').value = POLL_INTERVAL / 1000; }
+    // Load saved settings into globals + form
+    this.loadSettings();
 
     // Start polling
     this.startPolling();
@@ -68,12 +65,13 @@ const App = {
     let page = 'dashboard';
 
     if (hash.startsWith('#kanban')) page = 'kanban';
+    else if (hash.startsWith('#calendar')) page = 'calendar';
     else if (hash.startsWith('#council')) page = 'council';
     else if (hash.startsWith('#settings')) page = 'settings';
     else if (hash.startsWith('#agent/')) {
-      page = 'dashboard';
       const agentId = hash.replace('#agent/', '');
-      setTimeout(() => this.selectAgent(agentId), 100);
+      page = 'agent-detail';
+      this._pendingAgent = agentId;
     }
 
     this.navigateTo(page);
@@ -97,11 +95,23 @@ const App = {
     });
 
     // Page title
-    const titles = { dashboard: 'Fleet Overview', kanban: 'Kanban Board', council: 'Council Chamber', settings: 'Settings' };
+    const titles = { dashboard: 'Fleet Overview', kanban: 'Kanban Board', calendar: 'Fleet Calendar', council: 'Council Chamber', 'agent-detail': 'Agent Detail', settings: 'Settings' };
     document.getElementById('pageTitle').textContent = titles[page] || 'Fleet Overview';
 
     // Render kanban if navigating there
     if (page === 'kanban') Kanban.render();
+    // Init calendar if navigating there
+    if (page === 'calendar') {
+      if (!this._calendarInit) { Calendar.init(); this._calendarInit = true; }
+      else Calendar.render();
+    }
+    // Init agent detail if navigating there
+    if (page === 'agent-detail' && this._pendingAgent) {
+      AgentDetail.init(this._pendingAgent);
+      const agent = AGENTS_BY_ID[this._pendingAgent];
+      if (agent) document.getElementById('pageTitle').textContent = agent.name + ' — ' + agent.role;
+      this._pendingAgent = null;
+    }
   },
 
   selectAgent(agentId) {

@@ -230,6 +230,33 @@ body{
 /* ============================================
    SETTINGS
    ============================================ */
+#page-settings{overflow-y:auto}
+.settings-layout{max-width:700px;margin:0 auto;display:flex;flex-direction:column;gap:16px}
+.settings-section{margin-bottom:0}
+.settings-body{padding:20px}
+.settings-section .form-group{margin-bottom:14px}
+.settings-section .form-group:last-child{margin-bottom:0}
+.settings-section .form-group label{display:block;font-size:11px;font-weight:500;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:6px}
+.settings-section .form-group input{width:100%;background:var(--bg-surface);border:1px solid var(--border-subtle);border-radius:var(--radius-md);color:var(--text-primary);font-family:inherit;font-size:13px;padding:8px 12px}
+.settings-section .form-group input:focus{outline:none;border-color:var(--accent)}
+
+/* TOGGLE SWITCH */
+.toggle-switch{position:relative;display:inline-flex;align-items:center;gap:10px;cursor:pointer;font-size:13px;color:var(--text-secondary);font-weight:450;text-transform:none;letter-spacing:normal}
+.toggle-switch input{position:absolute;opacity:0;width:0;height:0}
+.toggle-slider{position:relative;display:inline-block;width:40px;height:22px;background:var(--bg-elevated);border-radius:11px;border:1px solid var(--border-standard);transition:background .2s,border-color .2s;flex-shrink:0}
+.toggle-slider::after{content:'';position:absolute;top:2px;left:2px;width:16px;height:16px;background:var(--text-muted);border-radius:50%;transition:transform .2s,background .2s}
+.toggle-switch input:checked+.toggle-slider{background:var(--accent);border-color:var(--accent)}
+.toggle-switch input:checked+.toggle-slider::after{transform:translateX(18px);background:#fff}
+
+/* PORT LABELS */
+.port-label{font-size:12px;font-weight:600;color:var(--text-primary);padding-left:12px;border-left:3px solid var(--agent-color)}
+.ports-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:12px}
+
+/* SETTINGS ACTIONS */
+.settings-actions{display:flex;gap:10px}
+.settings-actions .btn{padding:10px 20px;font-size:14px}
+
+/* keep old settings-group for backward compat — remove if unused */
 .settings-group{margin-bottom:16px}
 .settings-group label{display:block;font-size:12px;font-weight:500;color:var(--text-secondary);margin-bottom:6px}
 .settings-group input{width:100%;background:var(--bg-surface);border:1px solid var(--border-subtle);border-radius:var(--radius-md);color:var(--text-primary);font-family:inherit;font-size:13px;padding:8px 12px}
@@ -246,6 +273,114 @@ body{
 .statusbar-right .mini-dot.online{background:var(--success)}
 .statusbar-right .mini-dot.busy{background:var(--warning)}
 .statusbar-right .mini-dot.offline{background:var(--danger)}
+
+/* ============================================
+   CALENDAR
+   ============================================ */
+.calendar-toolbar{display:flex;align-items:center;gap:12px;padding:0 0 16px;flex-wrap:wrap}
+.cal-nav{display:flex;align-items:center;gap:6px}
+.cal-label{font-size:18px;font-weight:600;color:var(--text-bright);min-width:280px}
+.cal-views{display:flex;background:var(--bg-raised);border-radius:6px;overflow:hidden;border:1px solid var(--border-standard)}
+.cal-view-btn{padding:6px 14px;font-size:12px;border:none;background:transparent;color:var(--text-quiet);cursor:pointer;transition:all 0.15s}
+.cal-view-btn:hover{color:var(--text-bright)}
+.cal-view-btn.active{background:var(--primary);color:#fff}
+.cal-overlays{display:flex;align-items:center;gap:10px;margin-left:auto}
+.cal-toggle{display:flex;align-items:center;gap:5px;font-size:11px;color:var(--text-quiet)}
+.cal-add-btn{margin-left:6px}
+
+.cal-month{border:1px solid var(--border-standard);border-radius:8px;overflow:hidden;background:var(--bg-raised)}
+.cal-month-header{display:grid;grid-template-columns:repeat(7,1fr);background:var(--bg-surface);border-bottom:1px solid var(--border-standard)}
+.cal-day-header{padding:8px 4px;text-align:center;font-size:11px;font-weight:600;color:var(--text-quiet);text-transform:uppercase}
+.cal-month-body{display:contents}
+#calMonthGrid{display:grid;grid-template-rows:auto 1fr}
+#calMonthGrid[style*="display:block"] .cal-month-body{display:block}
+.cal-month-body{display:grid;grid-template-columns:repeat(7,1fr);min-height:500px}
+.cal-cell{border-bottom:1px solid var(--border-subtle);border-right:1px solid var(--border-subtle);padding:6px;min-height:90px;cursor:pointer;transition:background 0.12s}
+.cal-cell:hover{background:var(--bg-hover)}
+.cal-cell-other{background:var(--bg-surface);opacity:0.4;cursor:default}
+.cal-cell-other:hover{background:var(--bg-surface)}
+.cal-today{background:rgba(113,112,255,0.06)}
+.cal-today .cal-day-num{color:var(--primary);font-weight:700}
+.cal-weekend{background:rgba(255,255,255,0.01)}
+.cal-day-num{font-size:12px;color:var(--text-dim);margin-bottom:4px}
+.cal-day-content{display:flex;flex-direction:column;gap:2px;overflow:hidden}
+.cal-event{font-size:10px;padding:2px 5px;border-radius:3px;background:rgba(113,112,255,0.15);color:var(--text-bright);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;cursor:pointer;border-left:2px solid var(--ev-color,#7170ff);transition:background 0.1s}
+.cal-event:hover{background:rgba(113,112,255,0.25)}
+.cal-event-cron{background:rgba(245,158,11,0.1);border-left-color:#f59e0b;color:#f59e0b}
+.cal-event-kanban{background:rgba(16,185,129,0.1);border-left-color:#10b981;color:#10b981}
+
+/* Week view */
+.cal-cell-week{min-height:420px}
+
+/* Day view */
+.cal-day-list{padding:16px}
+.cal-day-empty{text-align:center;color:var(--text-dim);padding:60px 0;font-size:14px}
+.cal-day-event{display:flex;align-items:flex-start;gap:12px;padding:10px 0;border-bottom:1px solid var(--border-subtle)}
+.cal-day-time{font-size:12px;color:var(--text-dim);min-width:60px;font-family:'JetBrains Mono',monospace}
+.cal-day-title{font-size:14px;font-weight:500;color:var(--text-bright);cursor:pointer}
+.cal-day-title:hover{color:var(--primary)}
+.cal-day-desc{font-size:12px;color:var(--text-dim);margin-top:2px}
+
+/* Inline toggles */
+.cal-inline-toggle{display:inline-flex;align-items:center;gap:8px;font-size:12px}
+
+/* ============================================
+   AGENT DETAIL
+   ============================================ */
+.agent-detail{padding:0}
+.ad-header{display:flex;align-items:flex-start;gap:16px;padding:20px 24px;background:var(--bg-raised);border-radius:8px;border:1px solid var(--border-standard);margin-bottom:16px}
+.ad-avatar{width:48px;height:48px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:20px;font-weight:700;color:#fff;flex-shrink:0}
+.ad-meta{flex:1}
+.ad-name{font-size:18px;font-weight:600;margin-bottom:2px}
+.ad-role{font-size:13px;color:var(--text-dim);margin-bottom:4px}
+.ad-status{font-size:12px;display:flex;align-items:center;gap:6px;color:var(--text-quiet)}
+.ad-signals{text-align:right}
+.ad-signal-count{font-size:28px;font-weight:700;color:var(--primary)}
+.ad-signal-label{font-size:11px;color:var(--text-dim)}
+.ad-section{margin-bottom:16px;padding:16px 20px}
+.ad-soul{font-size:12px;color:var(--text-quiet);white-space:pre-wrap;line-height:1.6;max-height:200px;overflow-y:auto;font-family:'JetBrains Mono',monospace}
+.ad-placeholder{font-size:12px;color:var(--text-dim);font-style:italic;padding:12px 0}
+
+/* Sessions */
+.ad-session-row{display:flex;align-items:center;gap:10px;padding:6px 0;border-bottom:1px solid var(--border-subtle);font-size:12px}
+.ad-session-id{font-family:'JetBrains Mono',monospace;color:var(--text-bright);min-width:70px}
+.ad-session-status{font-size:10px;padding:1px 6px;border-radius:3px;text-transform:uppercase;font-weight:500}
+.ad-session-status.completed,.ad-session-status.success{background:rgba(16,185,129,0.15);color:var(--success)}
+.ad-session-status.failed,.ad-session-status.error{background:rgba(239,68,68,0.15);color:var(--danger)}
+.ad-session-status.running,.ad-session-status.in_progress{background:rgba(245,158,11,0.15);color:var(--warning)}
+.ad-session-time{color:var(--text-dim);margin-left:auto}
+.ad-session-model{font-size:10px;color:var(--text-dark)}
+
+/* Jobs */
+.ad-job-row{display:flex;align-items:center;gap:10px;padding:6px 0;border-bottom:1px solid var(--border-subtle);font-size:12px}
+.ad-job-name{color:var(--text-bright);font-weight:500}
+.ad-job-schedule{font-family:'JetBrains Mono',monospace;color:var(--text-dim);font-size:11px;margin-left:auto}
+.ad-job-status{font-size:10px;padding:1px 6px;border-radius:3px;background:rgba(16,185,129,0.15);color:var(--success)}
+
+/* Tasks (in detail view) */
+.ad-task-row{display:flex;align-items:center;gap:8px;padding:6px 0;border-bottom:1px solid var(--border-subtle);font-size:12px}
+.ad-task-title{color:var(--text-bright);flex:1}
+.ad-tasks .kanban-col-header{display:inline-block;font-size:10px;padding:1px 6px;border-radius:3px;background:rgba(160,165,175,0.1);color:var(--text-quiet)}
+
+/* Inbox */
+.ad-inbox-badge{margin-left:auto;font-size:12px;color:var(--text-dim)}
+
+/* Chat */
+.ad-chat{border:1px solid var(--border-standard);border-radius:6px;overflow:hidden}
+.ad-chat-log{min-height:150px;max-height:350px;overflow-y:auto;padding:12px;background:var(--bg-surface)}
+.ad-chat-msg{padding:6px 10px;margin-bottom:6px;border-radius:4px;font-size:12px;line-height:1.5}
+.ad-chat-msg.system{background:var(--bg-raised);color:var(--text-dim);font-style:italic}
+.ad-chat-msg.user{background:rgba(113,112,255,0.1);color:var(--text-bright);margin-left:20px}
+.ad-chat-msg.agent{background:var(--bg-raised);margin-right:20px}
+.ad-chat-msg.error{background:rgba(239,68,68,0.1);color:var(--danger)}
+.ad-chat-msg.loading{background:var(--bg-raised)}
+.ad-chat-sender{font-size:10px;font-weight:600;text-transform:uppercase;display:block;margin-bottom:2px;color:var(--text-dim)}
+.ad-chat-latency{font-size:10px;color:var(--text-dark);margin-left:4px}
+.ad-chat-input-row{display:flex;gap:8px;padding:10px 12px;border-top:1px solid var(--border-standard);background:var(--bg-raised)}
+.ad-chat-input-row textarea{flex:1;background:var(--bg-surface);border:1px solid var(--border-standard);border-radius:4px;color:var(--text-bright);font-size:12px;padding:8px;resize:none;font-family:Inter,sans-serif}
+.ad-chat-input-row textarea:focus{outline:none;border-color:var(--primary);box-shadow:0 0 0 2px rgba(113,112,255,0.15)}
+.ad-not-found{text-align:center;padding:60px 0;color:var(--text-dim)}
+.ad-not-found h2{color:var(--text-bright);margin-bottom:8px}
 
 /* ============================================
    SCROLLBAR
