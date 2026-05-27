@@ -11,6 +11,8 @@ const App = {
     UI.refreshAll();
     Kanban.init();
     Council.init();
+    Ticker.init();
+    Feed.init();
 
     // Canvas graph
     const canvas = document.getElementById('graphCanvas');
@@ -68,6 +70,8 @@ const App = {
     else if (hash.startsWith('#calendar')) page = 'calendar';
     else if (hash.startsWith('#council')) page = 'council';
     else if (hash.startsWith('#settings')) page = 'settings';
+    else if (hash.startsWith('#vault')) page = 'vault';
+    else if (hash.startsWith('#feed')) page = 'feed';
     else if (hash.startsWith('#agent/')) {
       const agentId = hash.replace('#agent/', '');
       page = 'agent-detail';
@@ -95,7 +99,7 @@ const App = {
     });
 
     // Page title
-    const titles = { dashboard: 'Fleet Overview', kanban: 'Kanban Board', calendar: 'Fleet Calendar', council: 'Council Chamber', 'agent-detail': 'Agent Detail', settings: 'Settings' };
+    const titles = { dashboard: 'Fleet Overview', kanban: 'Kanban Board', calendar: 'Fleet Calendar', council: 'Council Chamber', vault: 'Obsidian Vault', feed: 'Live Feed', 'agent-detail': 'Agent Detail', settings: 'Settings' };
     document.getElementById('pageTitle').textContent = titles[page] || 'Fleet Overview';
 
     // Render kanban if navigating there
@@ -104,6 +108,14 @@ const App = {
     if (page === 'calendar') {
       if (!this._calendarInit) { Calendar.init(); this._calendarInit = true; }
       else Calendar.render();
+    }
+    // Init vault if navigating there
+    if (page === 'vault') {
+      if (!this._vaultInit) { VaultBrowser.init(); this._vaultInit = true; }
+    }
+    // Init feed if navigating there
+    if (page === 'feed') {
+      Feed.render();
     }
     // Init agent detail if navigating there
     if (page === 'agent-detail' && this._pendingAgent) {
