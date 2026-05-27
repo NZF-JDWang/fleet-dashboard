@@ -44,6 +44,52 @@ const Calendar = {
     this.render();
   },
 
+  // Render month view into dashboard embed (compact)
+  renderToDashboard() {
+    const headerEl = document.getElementById('dashCalHeader');
+    const bodyEl = document.getElementById('dashCalBody');
+    const labelEl = document.getElementById('dashCalLabel');
+    if (!headerEl || !bodyEl) return;
+
+    const d = this.currentDate;
+    labelEl.textContent = `${this.MONTHS[d.getMonth()]} ${d.getFullYear()}`;
+
+    // Header row
+    headerEl.innerHTML = this.DAYS.map(day => `<div class="cal-day-header">${day.slice(0, 2)}</div>`).join('');
+
+    const year = d.getFullYear();
+    const month = d.getMonth();
+    const firstDay = new Date(year, month, 1).getDay();
+    const daysInMonth = new Date(year, month + 1, 0).getDate();
+    const today = new Date();
+    const todayStr = this._dateKey(today);
+
+    const cells = [];
+    for (let i = 0; i < firstDay; i++) {
+      cells.push(`<div class="cal-cell cal-cell-other"></div>`);
+    }
+    for (let day = 1; day <= daysInMonth; day++) {
+      const date = new Date(year, month, day);
+      const key = this._dateKey(date);
+      const isToday = key === todayStr;
+      const isWeekend = date.getDay() === 0 || date.getDay() === 6;
+      const dayEvents = this._eventsForDate(key);
+      const eventDots = dayEvents.map(ev =>
+        `<span class="cal-dash-dot" style="background:${ev.color || '#7170ff'}" title="${esc(ev.title)}"></span>`
+      ).join('');
+
+      let cls = 'cal-cell cal-cell-dash';
+      if (isToday) cls += ' cal-today';
+      if (isWeekend) cls += ' cal-weekend';
+
+      cells.push(`<div class="${cls}">
+        <div class="cal-day-num">${day}</div>
+        <div class="cal-dash-dots">${eventDots || ''}</div>
+      </div>`);
+    }
+    bodyEl.innerHTML = cells.join('');
+  },
+
   // Mini week view for dashboard widget — shows current week with event dots
   renderMiniWeek() {
     const container = document.getElementById('calendarMini');

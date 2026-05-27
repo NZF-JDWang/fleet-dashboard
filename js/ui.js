@@ -66,49 +66,10 @@ const UI = {
     }).join('');
   },
 
-  // ===== PULSE METRICS =====
-  renderPulseMetrics() {
-    const container = document.getElementById('pulseMetrics');
-    const online = State.onlineCount, total = AGENTS.length;
-    container.innerHTML = `
-      <div class="metric">
-        <div class="metric-label">Agents Online</div>
-        <div class="metric-value">${online}/${total}</div>
-        <div class="metric-sub">${online === total ? 'Full fleet' : 'Partial deployment'}</div>
-      </div>
-      <div class="metric">
-        <div class="metric-label">Avg Latency</div>
-        <div class="metric-value" id="avgLatency">--ms</div>
-        <div class="metric-sub">API round-trip</div>
-      </div>
-      <div class="metric">
-        <div class="metric-label">Signals (24h)</div>
-        <div class="metric-value">${State.signals.length}</div>
-        <div class="metric-sub">Activity events</div>
-      </div>
-      <div class="metric">
-        <div class="metric-label">Active Tasks</div>
-        <div class="metric-value">${State.tasks.filter(t => t.column === 'in-progress').length}</div>
-        <div class="metric-sub">Across all agents</div>
-      </div>
-    `;
-  },
-
-  // ===== DASHBOARD WIDGETS =====
-  renderDashboardWidgets() {
-    // Only render when dashboard page is active
-    const dash = document.getElementById('page-dashboard');
-    if (!dash || !dash.classList.contains('active')) return;
-    Kanban.renderMini();
-    Calendar.renderMiniWeek();
-  },
-
   // ===== REFRESH ALL =====
   refreshAll() {
     this.updateClock();
     this.updateStatusBar();
     this.renderSignals();
-    this.renderPulseMetrics();
-    this.renderDashboardWidgets();
   },
 };

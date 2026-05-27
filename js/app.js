@@ -100,8 +100,12 @@ const App = {
       if (!this._calendarInit) { Calendar.init(); this._calendarInit = true; }
       else Calendar.render();
     }
-    // Refresh dashboard widgets on return to dashboard
-    if (page === 'dashboard') UI.renderDashboardWidgets();
+    // Refresh dashboard content on return to dashboard
+    if (page === 'dashboard') {
+      if (!this._calendarInit) { Calendar.init(); this._calendarInit = true; }
+      Kanban.renderToDashboard();
+      Calendar.renderToDashboard();
+    }
     // Init vault if navigating there
     if (page === 'vault') {
       if (!this._vaultInit) { VaultBrowser.init(); this._vaultInit = true; }
@@ -145,6 +149,12 @@ const App = {
     const results = await ApiClient.checkAll();
     State.updateAgentStatus(results);
     UI.refreshAll();
+
+    // Refresh dashboard content if dashboard is visible
+    if (this.currentPage === 'dashboard') {
+      Kanban.renderToDashboard();
+      Calendar.renderToDashboard();
+    }
 
     // Update avg latency
     const onlineAgents = Object.values(results).filter(r => r.status === 'online');

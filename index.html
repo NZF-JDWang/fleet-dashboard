@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>BlacksiteLab — Fleet Command</title>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="css/main.css?v=0.4.2">
+<link rel="stylesheet" href="css/main.css?v=0.5.0">
 </head>
 <body>
 
@@ -109,35 +109,37 @@
     <!-- DASHBOARD PAGE -->
     <div class="page active" id="page-dashboard">
       <div class="dashboard-grid">
-        <!-- TOP ROW: Kanban Mini + Calendar Mini -->
-        <div class="dashboard-widgets" id="dashboardWidgets">
-          <div class="panel dashboard-widget" id="widgetKanban">
-            <div class="panel-header">
-              <span class="panel-title">Kanban Board</span>
-              <a class="panel-link" href="#kanban" title="Open full board">→</a>
-            </div>
-            <div class="kanban-mini" id="kanbanMini"></div>
+        <!-- LEFT: Full Kanban Board -->
+        <div class="dashboard-main" id="dashboardKanban">
+          <div class="panel-header">
+            <span class="panel-title">Kanban Board</span>
+            <a class="panel-link" href="#kanban" title="Open full board with drag-drop">→ Full Board</a>
           </div>
-          <div class="panel dashboard-widget" id="widgetCalendar">
-            <div class="panel-header">
-              <span class="panel-title">Calendar — This Week</span>
-              <a class="panel-link" href="#calendar" title="Open full calendar">→</a>
-            </div>
-            <div class="calendar-mini" id="calendarMini"></div>
+          <div class="kanban-board dash-kanban-board" id="dashboardKanbanBoard">
+            <div class="kanban-col" data-col="backlog"><div class="kanban-col-header" style="--accent:#8a8f98">Backlog</div><div class="kanban-cards" id="dash-col-backlog"></div></div>
+            <div class="kanban-col" data-col="in-progress"><div class="kanban-col-header" style="--accent:#f59e0b">In Progress</div><div class="kanban-cards" id="dash-col-in-progress"></div></div>
+            <div class="kanban-col" data-col="review"><div class="kanban-col-header" style="--accent:#06b6d4">Review</div><div class="kanban-cards" id="dash-col-review"></div></div>
+            <div class="kanban-col" data-col="done"><div class="kanban-col-header" style="--accent:#10b981">Done</div><div class="kanban-cards" id="dash-col-done"></div></div>
           </div>
         </div>
-        <!-- BOTTOM ROW: Signals + Pulse -->
-        <div class="dashboard-row">
-          <div class="panel signals-panel">
+        <!-- RIGHT: Calendar + Signals + Pulse -->
+        <div class="dashboard-side">
+          <div class="panel" id="dashboardCalendar">
+            <div class="panel-header">
+              <span class="panel-title">Calendar — <span id="dashCalLabel">May 2026</span></span>
+              <a class="panel-link" href="#calendar" title="Open full calendar">→ Full</a>
+            </div>
+            <div class="cal-month" id="dashCalGrid">
+              <div class="cal-month-header" id="dashCalHeader"></div>
+              <div class="cal-month-body" id="dashCalBody"></div>
+            </div>
+          </div>
+          <div class="panel signals-panel" id="dashboardSignals">
             <div class="panel-header">
               <span class="panel-title">Live Signals</span>
               <span class="live-badge">◉ LIVE</span>
             </div>
             <div class="signals-list" id="signalsList"></div>
-          </div>
-          <div class="panel">
-            <div class="panel-header"><span class="panel-title">Fleet Pulse</span></div>
-            <div class="metrics-grid" id="pulseMetrics"></div>
           </div>
         </div>
       </div>
