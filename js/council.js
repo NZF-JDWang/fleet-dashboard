@@ -86,16 +86,7 @@ const Council = {
         { role: 'user', content: `Original proposal: "${proposal}"\n\nYour colleagues' Round 1 positions:\n${context}\n\nNow provide your refined position.` },
       ]);
 
-      let content, latency;
-      if (result.status === 'ok') {
-        content = result.content;
-        latency = result.latency;
-      } else {
-        const simFn = SIMULATED_RESPONSES[agent.id];
-        content = simFn ? simFn(proposal) : '[Analysis unavailable]';
-        latency = 0;
-      }
-      return { agent, content, latency, live: result.status === 'ok' };
+      return { agent, content: result.content || '[No response]', latency: result.latency, live: true };
     });
 
     for (const promise of rebuttalPromises) {
@@ -133,18 +124,18 @@ const Council = {
       ]),
     ]);
 
-    const klausContent = klausResult.status === 'ok' ? klausResult.content : 'Research: multiple precedents exist; recommended to standardize fleet-wide.';
-    const yukiContent = yukiResult.status === 'ok' ? yukiResult.content : 'Tech: feasible with current stack; monitor resource usage.';
+    const klausContent = klausResult.content || '[Klaus: Research unavailable]';
+    const yukiContent = yukiResult.content || '[Yuki: Tech assessment unavailable]';
 
     this.transcript.push({
       phase: 'briefing', agent: 'klaus', name: 'Klaus', role: 'Research Lead',
       content: klausContent, latency: klausResult.latency || 0,
-      live: klausResult.status === 'ok', time: new Date().toISOString(),
+      live: true, time: new Date().toISOString(),
     });
     this.transcript.push({
       phase: 'briefing', agent: 'yuki', name: 'Yuki', role: 'Infra Engineer',
       content: yukiContent, latency: yukiResult.latency || 0,
-      live: yukiResult.status === 'ok', time: new Date().toISOString(),
+      live: true, time: new Date().toISOString(),
     });
 
     // Render briefing section
@@ -174,16 +165,7 @@ const Council = {
         { role: 'user', content: `As ${agent.name} (${agent.role}) at BlacksiteLab, the operator has proposed: "${proposal}". Provide your professional analysis — what you agree with, concerns, and recommended actions. Be concise.` },
       ]);
 
-      let content, latency;
-      if (result.status === 'ok') {
-        content = result.content;
-        latency = result.latency;
-      } else {
-        const simFn = SIMULATED_RESPONSES[agent.id];
-        content = simFn ? simFn(proposal) : `[${agent.name}: Unable to reach API for analysis]`;
-        latency = 0;
-      }
-      return { agent, content, latency, live: result.status === 'ok' };
+      return { agent, content: result.content || '[No response]', latency: result.latency, live: true };
     });
 
     for (const promise of agentPromises) {
@@ -209,7 +191,7 @@ const Council = {
     const el = document.createElement('div');
     el.className = 'agent-response';
     el.style.cssText = `--agent-color:${agent.color};border-left-color:${agent.color}`;
-    const source = live ? `API • ${latency}ms` : 'simulated';
+    const source = `API • ${latency}ms`;
     el.innerHTML = `
       <div class="response-header">
         <div class="response-avatar" style="background:${agent.color}">${agent.avatar}</div>
@@ -237,28 +219,19 @@ const Council = {
     ];
 
     const result = await ApiClient.sendChat('claire', synthPrompt);
-    let synthContent, latency, live;
-    if (result.status === 'ok') {
-      synthContent = result.content;
-      latency = result.latency;
-      live = true;
-    } else {
-      synthContent = `**Consensus Brief (simulated)**\n\n1. **Points of Consensus:** The fleet agrees this proposal merits consideration.\n2. **Remaining Disagreements:** Implementation details require further specification.\n3. **Recommended Decision:** Proceed with a pilot phase, assign Sven to prototype, Yuki to assess infra impact.\n4. **Next Steps:** Sven delivers prototype within 48h; full fleet review follows.`;
-      latency = 0;
-      live = false;
-    }
+    const synthContent = result.content || '[Consensus synthesis unavailable]';
 
     this.transcript.push({
       phase: 'synthesis', agent: 'claire', name: 'Claire', role: 'Chief of Staff',
-      content: synthContent, latency, live, time: new Date().toISOString(),
+      content: synthContent, latency: result.latency, live: true, time: new Date().toISOString(),
     });
 
     const el = document.createElement('div');
     el.className = 'council-synthesis';
     el.innerHTML = `
       <div class="synth-header">
-        <div class="synth-badge">${live ? '◆ LIVE' : '◆ SIMULATED'} Consensus</div>
-        <div class="synth-by">Synthesized by Claire — Chief of Staff ${live ? `• ${latency}ms` : ''}</div>
+        <div class="synth-badge">◆ LIVE Consensus</div>
+        <div class="synth-by">Synthesized by Claire — Chief of Staff</div>
       </div>
       <div class="synth-body">${markdownToHtml(synthContent)}</div>
     `;
@@ -286,27 +259,18 @@ const Council = {
 
     const agentPromises = AGENTS.map(async (agent) => {
       const result = await ApiClient.sendChat(agent.id, [
-        { role: 'system', content: `You are ${agent.name}, ${agent.role} at BlacksiteLab. Respond with your analysis.` },
+        { role: 'system', content: systemPrompt },
         { role: 'user', content: `As ${agent.name} (${agent.role}) at BlacksiteLab, the operator has proposed: "${proposal}". Provide your professional analysis — what you agree with, concerns, and recommended actions. Be concise.` },
       ]);
 
-      let content, latency;
-      if (result.status === 'ok') {
-        content = result.content;
-        latency = result.latency;
-      } else {
-        const simFn = SIMULATED_RESPONSES[agent.id] || (() => `[Analysis unavailable for this topic]`);
-        content = simFn(proposal);
-        latency = 0;
-      }
-      return { agent, content, latency, live: result.status === 'ok' };
+      return { agent, content: result.content || '[No response]', latency: result.latency, live: true };
     });
 
     for (const promise of agentPromises) {
-      const { agent, content, latency, live } = await promise;
+      const { agent, content, latency } = await promise;
       this.transcript.push({
         phase: 'round1', agent: agent.id, name: agent.name, role: agent.role,
-        content, latency, live, time: new Date().toISOString(),
+        content, latency, live: true, time: new Date().toISOString(),
       });
 
       const loadingEl = document.getElementById(`loading-${agent.id}`);
@@ -319,7 +283,7 @@ const Council = {
         bodyEl.textContent = content;
         respEl.appendChild(bodyEl);
         const meta = document.getElementById(`meta-${agent.id}`);
-        if (meta) meta.textContent += live ? ` • ${latency}ms` : ' • simulated';
+        if (meta) meta.textContent += ` • ${latency}ms`;
       }
     }
   },
@@ -348,16 +312,11 @@ const Council = {
         { role: 'user', content: pollPrompt },
       ]);
       let vote;
-      if (result.status === 'ok') {
-        const upper = result.content.toUpperCase();
-        if (upper.includes('AGREE')) vote = 'agree';
-        else if (upper.includes('DISAGREE')) vote = 'disagree';
-        else vote = 'uncertain';
-      } else {
-        const tendencies = { claire: 'agree', sven: 'agree', yuki: 'disagree', margot: 'agree', klaus: 'disagree' };
-        vote = tendencies[agent.id] || 'agree';
-      }
-      return { agent, vote, live: result.status === 'ok' };
+      const upper = (result.content || '').toUpperCase();
+      if (upper.includes('AGREE')) vote = 'agree';
+      else if (upper.includes('DISAGREE')) vote = 'disagree';
+      else vote = 'uncertain';
+      return { agent, vote, live: true };
     });
 
     let agree = 0, disagree = 0, errors = 0;
@@ -379,9 +338,9 @@ const Council = {
     bar.style.display = 'block';
     const total = AGENTS.length;
     if (agree > disagree && agree > total / 2) {
-      bar.innerHTML = `<div class="consensus-result" style="color:var(--success)">Consensus: Agree</div><div class="consensus-label">${agree}/${total} agents in favor • * = simulated</div>`;
+      bar.innerHTML = `<div class="consensus-result" style="color:var(--success)">Consensus: Agree</div><div class="consensus-label">${agree}/${total} agents in favor</div>`;
     } else if (disagree > agree && disagree > total / 2) {
-      bar.innerHTML = `<div class="consensus-result" style="color:var(--danger)">Consensus: Disagree</div><div class="consensus-label">${disagree}/${total} agents opposed • * = simulated</div>`;
+      bar.innerHTML = `<div class="consensus-result" style="color:var(--danger)">Consensus: Disagree</div><div class="consensus-label">${disagree}/${total} agents opposed</div>`;
     } else {
       bar.innerHTML = `<div class="consensus-result" style="color:var(--warning)">Split Decision</div><div class="consensus-label">${agree} agree • ${disagree} disagree • ${errors} uncertain</div>`;
     }
@@ -480,7 +439,7 @@ const Council = {
     if (round1.length) {
       lines.push('## Round 1 — Initial Positions\n');
       for (const entry of round1) {
-        const src = entry.live ? '⚡ API' : '📋 simulated';
+        const src = '⚡ API';
         const id = (entry.agent || entry.name || '').toLowerCase();
         lines.push(`> [!${id}]+ ${entry.name} — ${entry.role} [${src}]`);
         lines.push('> ' + entry.content.replace(/\n/g, '\n> '));
@@ -493,7 +452,7 @@ const Council = {
     if (round2.length) {
       lines.push('## Round 2 — Rebuttal & Deliberation\n');
       for (const entry of round2) {
-        const src = entry.live ? '⚡ API' : '📋 simulated';
+        const src = '⚡ API';
         const id = (entry.agent || entry.name || '').toLowerCase();
         lines.push(`> [!${id}]+ ${entry.name} — ${entry.role} [${src}]`);
         lines.push('> ' + entry.content.replace(/\n/g, '\n> '));

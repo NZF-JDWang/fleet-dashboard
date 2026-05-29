@@ -70,14 +70,16 @@ const ApiClient = {
 
   // Council chat proxy — POST /api/council/chat
   async sendChat(agentId, messages) {
+    const t0 = performance.now();
     const res = await this._fetch('/api/council/chat', {
       method: 'POST',
       body: JSON.stringify({ agent: agentId, messages }),
-      timeout: 30000,
+      timeout: 60000,
     });
+    const latency = Math.round(performance.now() - t0);
     if (res.ok && res.data?.content) {
-      return { status: 'ok', content: res.data.content, latency: 0 };
+      return { status: 'ok', content: res.data.content, latency };
     }
-    return { status: 'error', error: res.data?.error || 'No response', latency: 0 };
+    return { status: 'error', error: res.data?.error || res.data?.message || 'No response', latency };
   },
 };

@@ -166,31 +166,73 @@ def _write_kanban(tasks):
 
 
 # ── Council Proxy ───────────────────────────────────────────────────────
-def proxy_chat(agent_id, messages):
-    """Send chat messages to an agent's API. Only Claire works currently."""
-    agent = next((a for a in AGENTS if a["id"] == agent_id), None)
-    if not agent:
-        return {"error": f"Unknown agent: {agent_id}"}
+OLLAMA_CHAT = "http://172.17.0.1:11434/v1/chat/completions"
 
-    url = f"http://{agent['host']}:{agent['port']}/v1/chat/completions"
+AGENT_MODELS = {
+    "claire": "glm-5.1:cloud",
+    "sven":   "deepseek-v4-pro:cloud",
+    "yuki":   "deepseek-v4-flash:cloud",
+    "margot": "glm-5.1:cloud",
+    "klaus":  "kimi-k2.6:cloud",
+}
+
+AGENT_PERSONAS = {
+    "claire": (
+        "You are Claire, Chief of Staff at BlacksiteLab. You coordinate the fleet of AI agents, "
+        "route work, and synthesize decisions. You are precise, decisive, and keep the lab running. "
+        "Respond in character — direct, competent, no fluff."
+    ),
+    "sven": (
+        "You are Sven, a Swedish expert coding agent at BlacksiteLab. You build, debug, review, "
+        "and ship code with precision. You are calm, exact, literal, and methodical. "
+        "You value compact correct code. Respond as Sven — direct, technical, no jokes."
+    ),
+    "yuki": (
+        "You are Yuki, Infra Engineer at BlacksiteLab. You manage servers, containers, networking, "
+        "and keep the infrastructure reliable. You think in terms of ports, latency, resource usage, "
+        "and security. Respond as Yuki — practical, ops-focused, no hand-waving."
+    ),
+    "margot": (
+        "You are Margot, Vault Keeper at BlacksiteLab. You maintain the Obsidian knowledge base, "
+        "enforce schema rules, and ensure information is findable and correct. You care about "
+        "structure, tags, frontmatter, and long-term knowledge preservation. Respond as Margot."
+    ),
+    "klaus": (
+        "You are Klaus, Research Lead at BlacksiteLab. You search for evidence, precedents, "
+        "and best practices. You ground decisions in data and literature. You cite sources "
+        "when possible and flag assumptions. Respond as Klaus — inquisitive, evidence-driven."
+    ),
+}
+
+
+def proxy_chat(agent_id, messages):
+    """Route council chat through Ollama with per-agent persona + model."""
+    model = AGENT_MODELS.get(agent_id)
+    persona = AGENT_PERSONAS.get(agent_id)
+    if not model:
+        return {"status": "error", "message": f"Unknown agent: {agent_id}"}
+
+    # Prepend persona system prompt — frontend may also send its own system prompt,
+    # so we inject as the first message to anchor the identity
+    full_messages = [{"role": "system", "content": persona}] + messages
+
     body = json.dumps({
-        "model": "default",
-        "messages": messages,
-        "max_tokens": 500,
+        "model": model,
+        "messages": full_messages,
+        "max_tokens": 2048,
         "temperature": 0.7,
     }).encode()
 
     try:
-        req = urllib.request.Request(url, data=body)
+        req = urllib.request.Request(OLLAMA_CHAT, data=body)
         req.add_header("Content-Type", "application/json")
-        # No API key needed for localhost polling per Hermes config
-        with urllib.request.urlopen(req, timeout=30) as resp:
+        with urllib.request.urlopen(req, timeout=60) as resp:
             data = json.loads(resp.read())
             content = data.get("choices", [{}])[0].get("message", {}).get("content", "")
             return {"status": "ok", "content": content}
     except urllib.error.HTTPError as e:
-        body = e.read().decode(errors="replace")
-        return {"status": "error", "http_status": e.code, "body": body}
+        err_body = e.read().decode(errors="replace")
+        return {"status": "error", "http_status": e.code, "body": err_body}
     except Exception as e:
         return {"status": "error", "message": str(e)}
 
