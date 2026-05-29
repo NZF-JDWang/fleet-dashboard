@@ -8,22 +8,8 @@ const Feed = {
     if (this._init) return;
     this._init = true;
 
-    // Listen for signal events
-    State.onSignalAdded = (signal) => {
-      this.addEvent(signal);
-    };
-
-    // Load demo signals initially
-    DEMO_SIGNALS.forEach(s => this.addEvent(s));
-
     // Refresh periodically
     setInterval(() => this.render(), 5000);
-  },
-
-  addEvent(signal) {
-    // Rendered by ticker; feed page uses the same source
-    // Ensure events show up immediately
-    this.render();
   },
 
   render() {
@@ -40,18 +26,22 @@ const Feed = {
     }
 
     el.innerHTML = events.map((s, i) => {
-      const agent = AGENTS_BY_ID[s.agent];
+      // Normalize signal for rendering
+      const agentId = 'sven';
+      const agent = AGENTS_BY_ID[agentId];
       const color = agent ? agent.color : '#7170ff';
-      const name = agent ? agent.name : s.agent;
+      const name = agent ? agent.name : agentId;
       const time = s.time || '';
+      const text = (s.content || '').slice(0, 120);
+      const toolTag = s.type === 'tool' ? (s.tool ? `[${s.tool}]` : '[tool]') : '';
       return `
         <div class="feed-event" style="--feed-color:${color}; animation-delay:${i * 0.03}s">
           <div class="feed-event-time">${escHtml(time)}</div>
           <div class="feed-event-dot" style="background:${color}"></div>
           <div class="feed-event-body">
             <span class="feed-event-agent" style="color:${color}">${escHtml(name)}</span>
-            <span class="feed-event-text">${escHtml(s.text || '')}</span>
-            ${s.file ? `<span class="feed-event-file">📄 ${escHtml(s.file)}</span>` : ''}
+            <span class="feed-event-text">${escHtml(text)}</span>
+            ${toolTag ? `<span class="feed-event-file">📄 ${escHtml(toolTag)}</span>` : ''}
           </div>
         </div>
       `;

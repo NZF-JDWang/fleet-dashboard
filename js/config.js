@@ -11,40 +11,20 @@ const AGENTS = [
 
 const AGENTS_BY_ID = Object.fromEntries(AGENTS.map(a => [a.id, a]));
 
-let API_KEY = 'change-me-local-dev';
-let API_BASE_URL = 'http://localhost';
-let POLL_INTERVAL = 5000;
-let VAULT_BASE = '/home/jd/obsidian-vaults/BlacksiteLabVault/';
-let COUNCIL_TRANSCRIPT_PATH = '04_PROJECTS/fleet-council/';
-let KANBAN_MIRROR_PATH = '04_PROJECTS/fleet-kanban/';
-let AUTO_SAVE_TRANSCRIPTS = true;
+// Backend aggregation server — all API calls go through this
+const BACKEND_URL = 'http://localhost:8899';
+const POLL_INTERVAL = 5000;
 let PAUSE_POLLING = false;
 
-function getApiBase(port) {
-  return `${API_BASE_URL}:${port}/v1`;
-}
+// Council config
+let AUTO_SAVE_TRANSCRIPTS = true;
+let COUNCIL_TRANSCRIPT_PATH = '04_PROJECTS/fleet-council/';
 
-// Demo signals for when APIs are unreachable
-const DEMO_SIGNALS = [
-  { time: '22:14:01', agent: 'sven',    text: 'git push origin main — fleet-dashboard v0.1', file: 'index.html' },
-  { time: '22:13:45', agent: 'claire',  text: 'PR #42 merged: add gravity-well physics', file: 'physics/gravity_well.gd' },
-  { time: '22:13:18', agent: 'margot',  text: 'Vault entry updated: Fleet Dashboard Proposal', file: 'fleet-dashboard-plan.md' },
-  { time: '22:12:52', agent: 'yuki',    text: 'Deploy gravity-game v0.3.1 to prod', file: 'docker-compose.yml' },
-  { time: '22:12:30', agent: 'klaus',   text: 'arXiv:2312.12345 — MoE routing paper analysis', file: 'notes/moe-routing.md' },
-  { time: '22:11:55', agent: 'sven',    text: 'npm run build succeeded — 14.3KB gzip', file: 'dist/bundle.js' },
-  { time: '22:11:20', agent: 'claire',  text: 'Staff meeting notes committed', file: 'meetings/2026-05-26.md' },
-  { time: '22:10:45', agent: 'yuki',    text: 'SSL cert renewed for blacksitelab.dev', file: null },
-  { time: '22:10:02', agent: 'margot',  text: 'Tagged vault snapshot v2026.05.26', file: null },
-  { time: '22:09:33', agent: 'klaus',   text: 'Web search: hermes-agent multi-agent topologies', file: null },
-];
-
-// Demo kanban tasks
-const DEMO_TASKS = [
-  { id: 't1', title: 'Add fleet topology graph', desc: 'Canvas-based graph showing 5 agents with glow halos', column: 'done', assignee: 'sven', priority: 'high' },
-  { id: 't2', title: 'Build council chamber modal', desc: 'Full debate + quick poll with Hermes API integration', column: 'review', assignee: 'sven', priority: 'high' },
-  { id: 't3', title: 'Wire up real-time status polling', desc: 'Poll /health/detailed every 5s for each agent', column: 'in-progress', assignee: 'sven', priority: 'medium' },
-  { id: 't4', title: 'Add drag-and-drop to kanban', desc: 'Implement HTML5 drag API for task cards between columns', column: 'in-progress', assignee: 'sven', priority: 'medium' },
-  { id: 't5', title: 'Design agent settings page', desc: 'Per-agent API key, port, and endpoint config', column: 'backlog', assignee: 'claire', priority: 'low' },
-  { id: 't6', title: 'Add WebSocket support', desc: 'Replace polling with WS for real-time signals', column: 'backlog', assignee: 'yuki', priority: 'low' },
-  { id: 't7', title: 'Implement Obsidian vault bridge', desc: 'Read/write notes to Obsidian vault from dashboard', column: 'backlog', assignee: 'margot', priority: 'medium' },
-];
+// Fallback simulated responses when agent APIs are unreachable
+const SIMULATED_RESPONSES = {
+  claire: (p) => `Claire (Chief of Staff): The proposal "${p.slice(0, 50)}..." requires fleet coordination. I recommend Sven handle implementation, with Yuki on infrastructure review and Klaus on background research. Margot should document the decision in the vault.`,
+  sven: (p) => `Sven (Dev): I can build this. The architecture should be modular with clean API boundaries. Estimate: 4-8 hours for a prototype. Need Yuki to confirm the deployment target and Klaus to validate any research assumptions.`,
+  yuki: (p) => `Yuki (Infra): From an infrastructure standpoint, we need to consider: 1) resource allocation per container, 2) network latency between the dashboard and agent hosts, 3) whether this adds new services that need monitoring. Docker compose changes would be minimal.`,
+  margot: (p) => `Margot (Vault): I'll create the documentation trail. Need a project folder under 04_PROJECTS/ with a plan, implementation log, and post-mortem. All council decisions should be preserved as callout-annotated markdown.`,
+  klaus: (p) => `Klaus (Research): Let me search for relevant precedents. Multi-agent topologies are well-studied in the literature — see AutoGen, CrewAI, and the Hermes agent orchestration patterns. I'll compile a briefing with key findings.`,
+};

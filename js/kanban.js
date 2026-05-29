@@ -27,7 +27,8 @@ const Kanban = {
       const tasks = State.getColumnTasks(col);
       container.innerHTML = tasks.map(t => this.taskCard(t)).join('');
       // Update column count
-      const header = container.closest('.kanban-col').querySelector('.kanban-col-header');
+      const header = container.closest('.kanban-col')?.querySelector('.kanban-col-header');
+      if (!header) return;
       const existingCount = header.querySelector('.kanban-col-count');
       if (existingCount) existingCount.remove();
       header.insertAdjacentHTML('beforeend', `<span class="kanban-col-count">${tasks.length}</span>`);
@@ -45,7 +46,8 @@ const Kanban = {
       const tasks = State.getColumnTasks(col);
       container.innerHTML = tasks.map(t => this.taskCard(t)).join('');
       // Update column counts
-      const header = container.closest('.kanban-col').querySelector('.kanban-col-header');
+      const header = container.closest('.kanban-col')?.querySelector('.kanban-col-header');
+      if (!header) return;
       const existingCount = header.querySelector('.kanban-col-count');
       if (existingCount) existingCount.remove();
       header.insertAdjacentHTML('beforeend', `<span class="kanban-col-count">${tasks.length}</span>`);
@@ -68,10 +70,10 @@ const Kanban = {
 
     // Rebind delete buttons
     document.querySelectorAll('.kc-delete').forEach(btn => {
-      btn.addEventListener('click', (e) => {
+      btn.addEventListener('click', async (e) => {
         e.stopPropagation();
         const id = btn.closest('.kanban-card').dataset.taskId;
-        State.deleteTask(id);
+        await State.deleteTask(id);
         this.render();
       });
     });
@@ -116,12 +118,12 @@ const Kanban = {
       col.addEventListener('dragleave', e => {
         col.style.background = '';
       });
-      col.addEventListener('drop', e => {
+      col.addEventListener('drop', async e => {
         e.preventDefault();
         col.style.background = '';
         const taskId = e.dataTransfer.getData('text/plain');
         const toCol = col.closest('.kanban-col').dataset.col;
-        State.moveTask(taskId, toCol);
+        await State.moveTask(taskId, toCol);
         this.render();
       });
     });
@@ -141,21 +143,23 @@ const Kanban = {
     document.getElementById('taskModal').classList.remove('open');
   },
 
-  saveTask() {
+  async saveTask() {
     const title = document.getElementById('taskTitle').value.trim();
     if (!title) return;
     const editId = document.getElementById('btnSaveTask').dataset.editId;
     if (editId) {
       const task = State.tasks.find(t => t.id === editId);
       if (task) {
-        task.title = title;
-        task.desc = document.getElementById('taskDesc').value.trim();
-        task.assignee = document.getElementById('taskAssignee').value;
-        task.priority = document.getElementById('taskPriority').value;
-        State.saveTasks();
+        const fields = {
+          title,
+          desc: document.getElementById('taskDesc').value.trim(),
+          assignee: document.getElementById('taskAssignee').value,
+          priority: document.getElementById('taskPriority').value,
+        };
+        await State.updateTaskFields(editId, fields);
       }
     } else {
-      State.addTask({
+      await State.addTask({
         title,
         desc: document.getElementById('taskDesc').value.trim(),
         assignee: document.getElementById('taskAssignee').value,

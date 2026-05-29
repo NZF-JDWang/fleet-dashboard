@@ -1,10 +1,12 @@
 // BlacksiteLab Fleet Command — Obsidian Vault Browser
 // Browse, read, search, and create notes in the Obsidian vault from the dashboard
 
+const VAULT_BRIDGE_URL = 'http://localhost:8699';
+
 const VaultBrowser = {
   notes: [],
   currentPath: '',
-  vaultBase: VAULT_BASE,
+  vaultBase: '/vault/',
 
   init() {
     document.getElementById('btnVaultRefresh').addEventListener('click', () => this.loadNotes());
@@ -27,7 +29,7 @@ const VaultBrowser = {
     list.innerHTML = '<div class="vault-loading"><div class="spinner"></div> Loading vault...</div>';
 
     try {
-      const res = await fetch(`${API_BASE_URL}:8699/list`);
+      const res = await fetch(`${VAULT_BRIDGE_URL}/list`);
       if (res.ok) {
         const data = await res.json();
         this.notes = data.files || [];
@@ -93,7 +95,7 @@ const VaultBrowser = {
     // Try vault bridge
     let content = '';
     try {
-      const res = await fetch(`${API_BASE_URL}:8699/read?path=${encodeURIComponent(path)}`);
+      const res = await fetch(`${VAULT_BRIDGE_URL}/read?path=${encodeURIComponent(path)}`);
       if (res.ok) {
         const data = await res.json();
         content = data.content || '';
@@ -130,7 +132,7 @@ const VaultBrowser = {
     }
 
     try {
-      const res = await fetch(`${API_BASE_URL}:8699/write`, {
+      const res = await fetch(`${VAULT_BRIDGE_URL}/write`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ path, content }),
@@ -157,7 +159,7 @@ const VaultBrowser = {
     list.innerHTML = '<div class="vault-loading"><div class="spinner"></div> Searching...</div>';
 
     try {
-      const res = await fetch(`${API_BASE_URL}:8699/search?q=${encodeURIComponent(q)}`);
+      const res = await fetch(`${VAULT_BRIDGE_URL}/search?q=${encodeURIComponent(q)}`);
       if (res.ok) {
         const data = await res.json();
         this.notes = (data.results || []).map(r => ({

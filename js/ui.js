@@ -53,14 +53,22 @@ const UI = {
   renderSignals() {
     const list = document.getElementById('signalsList');
     list.innerHTML = State.signals.slice(0, 15).map(s => {
-      const agent = AGENTS_BY_ID[s.agent];
+      // Determine which agent this signal belongs to
+      // Real signals have role+content; assign based on session context
+      let agentId = 'sven'; // default: most signals are Sven's
+      if (s.content && s.content.toLowerCase().includes('claire')) agentId = 'claire';
+      const agent = AGENTS_BY_ID[agentId];
       const color = agent ? agent.color : '#7170ff';
+      const name = agent ? agent.name : agentId;
+      const sessionTag = s.session ? ` • ${s.session}` : '';
+      const signalType = s.type === 'tool' ? (s.tool ? `[${s.tool}]` : '[tool]') : '';
       return `
         <div class="signal-item">
-          <span class="signal-time">${s.time}</span>
-          <span class="signal-badge" style="background:${color}">${s.agent}</span>
-          <span class="signal-text">${s.text}
-            ${s.file ? `<span class="signal-file"> • ${s.file}</span>` : ''}
+          <span class="signal-time">${s.time || ''}</span>
+          <span class="signal-badge" style="background:${color}">${name}</span>
+          <span class="signal-text">${escHtml((s.content || '').slice(0, 120))}
+            ${signalType ? `<span class="signal-file">${escHtml(signalType)}</span>` : ''}
+            ${sessionTag ? `<span class="signal-file">${sessionTag}</span>` : ''}
           </span>
         </div>`;
     }).join('');

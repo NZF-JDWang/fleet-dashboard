@@ -1,93 +1,83 @@
 // BlacksiteLab Fleet Command — API Client
-// Hermes Agent API (OpenAI-compatible) integration
+// All calls route through the aggregation backend
 
 const ApiClient = {
-  async _fetch(agentId, path, options = {}) {
-    const agent = AGENTS_BY_ID[agentId];
-    if (!agent) throw new Error(`Unknown agent: ${agentId}`);
-    const base = options.skipV1Prefix
-      ? `${API_BASE_URL}:${agent.port}`
-      : getApiBase(agent.port);
-    const url = `${base}${path}`;
-    const { skipV1Prefix, ...fetchOpts } = options;
-    const start = performance.now();
+  _prefix() { return BACKEND_URL; },
+
+  async _fetch(path, options = {}) {
+    const url = `${this._prefix()}${path}`;
     try {
       const res = await fetch(url, {
-        ...fetchOpts,
+        ...options,
         headers: {
-          'Authorization': `Bearer ${API_KEY}`,
           'Content-Type': 'application/json',
           ...options.headers,
         },
-        signal: AbortSignal.timeout(8000),
+        signal: AbortSignal.timeout(options.timeout || 8000),
       });
-      const latency = Math.round(performance.now() - start);
-      return { ok: res.ok, status: res.status, latency, data: await res.json().catch(() => null) };
+      const data = await res.json().catch(() => null);
+      return { ok: res.ok, status: res.status, data };
     } catch (e) {
-      return { ok: false, status: 0, latency: 0, error: e.message };
+      return { ok: false, status: 0, error: e.message };
     }
   },
 
-  // Health check — returns agent status (not under /v1 prefix)
-  async getHealth(agentId) {
-    const res = await this._fetch(agentId, '/health', { skipV1Prefix: true });
-    if (res.ok) {
-      return { status: 'online', latency: res.latency, ...res.data };
-    }
-    return { status: 'offline', latency: res.latency };
-  },
-
-  // Check all agents — returns {claire: {status, latency}, sven: {...}, ...}
+  // Health/agent status — GET /api/agents
   async checkAll() {
-    const results = {};
-    const checks = AGENTS.map(async agent => {
-      const h = await this.getHealth(agent.id);
-      results[agent.id] = h.status === 'online' ? { status: 'online', latency: h.latency } : { status: 'offline', latency: 0 };
-    });
-    await Promise.allSettled(checks);
-    return results;
+    const res = await this._fetch('/api/agents');
+    if (res.ok) return res.data;
+    return {};
   },
 
-  // Send chat to an agent — used by council
+  // Recent signals — GET /api/signals?limit=N
+  async getSignals(limit = 15) {
+    const res = await this._fetch(`/api/signals?limit=${limit}`);
+    if (res.ok) return res.data;
+    return [];
+  },
+
+  // Kanban CRUD
+  async getTasks() {
+    const res = await this._fetch('/api/kanban');
+    if (res.ok) return res.data;
+    return [];
+  },
+
+  async createTask(task) {
+    const res = await this._fetch('/api/kanban', {
+      method: 'POST',
+      body: JSON.stringify(task),
+    });
+    if (res.ok) return res.data;
+    return null;
+  },
+
+  async updateTask(taskId, updates) {
+    const res = await this._fetch(`/api/kanban/${taskId}`, {
+      method: 'PUT',
+      body: JSON.stringify(updates),
+    });
+    if (res.ok) return res.data;
+    return null;
+  },
+
+  async deleteTask(taskId) {
+    const res = await this._fetch(`/api/kanban/${taskId}`, {
+      method: 'DELETE',
+    });
+    return res.ok;
+  },
+
+  // Council chat proxy — POST /api/council/chat
   async sendChat(agentId, messages) {
-    const res = await this._fetch(agentId, '/chat/completions', {
+    const res = await this._fetch('/api/council/chat', {
       method: 'POST',
-      body: JSON.stringify({
-        model: 'default',
-        messages,
-        max_tokens: 500,
-        temperature: 0.7,
-      }),
+      body: JSON.stringify({ agent: agentId, messages }),
+      timeout: 30000,
     });
-    if (res.ok && res.data?.choices?.[0]?.message?.content) {
-      return { status: 'ok', content: res.data.choices[0].message.content, latency: res.latency };
+    if (res.ok && res.data?.content) {
+      return { status: 'ok', content: res.data.content, latency: 0 };
     }
-    return { status: 'error', error: res.error || 'No response', latency: res.latency };
-  },
-
-  // Send responses API call (newer Hermes endpoint)
-  async sendResponse(agentId, input, instructions = '') {
-    const res = await this._fetch(agentId, '/responses', {
-      method: 'POST',
-      body: JSON.stringify({ input: [{ role: 'user', content: input }], instructions }),
-    });
-    if (res.ok && res.data?.output) {
-      return { status: 'ok', content: res.data.output.map(o => o.content || '').join('\n'), latency: res.latency };
-    }
-    return { status: 'error', error: res.error || 'No response', latency: res.latency };
-  },
-
-  // List recent runs for an agent
-  async listRuns(agentId, limit = 5) {
-    const res = await this._fetch(agentId, `/runs?limit=${limit}`);
-    if (res.ok) return res.data;
-    return { data: [] };
-  },
-
-  // List jobs for an agent
-  async listJobs(agentId) {
-    const res = await this._fetch(agentId, '/jobs');
-    if (res.ok) return res.data;
-    return { data: [] };
+    return { status: 'error', error: res.data?.error || 'No response', latency: 0 };
   },
 };

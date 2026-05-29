@@ -2,22 +2,29 @@
 
 const State = {
   agents: {},       // {claire: {status:'online', latency:12}, sven: {...}}
-  signals: [],      // Recent activity signals
+  signals: [],      // Recent activity from session DB
   fleetStatus: 'All Systems Online',
   onlineCount: 0,
   selectedAgent: null,
   lastUpdated: null,
   tasks: [],        // Kanban tasks
 
-  init() {
+  async init() {
     // Initialize agent state
     AGENTS.forEach(a => {
       this.agents[a.id] = { status: 'unknown', latency: 0, task: '', sessions: 0 };
     });
-    // Load tasks from localStorage
-    const saved = localStorage.getItem('fleet-tasks');
-    this.tasks = saved ? JSON.parse(saved) : [...DEMO_TASKS];
-    this.signals = [...DEMO_SIGNALS];
+    // Load tasks + signals from backend
+    try {
+      this.tasks = await ApiClient.getTasks();
+    } catch {
+      this.tasks = [];
+    }
+    try {
+      this.signals = await ApiClient.getSignals(15);
+    } catch {
+      this.signals = [];
+    }
   },
 
   updateAgentStatus(results) {
@@ -36,33 +43,43 @@ const State = {
 
   addSignal(signal) {
     this.signals.unshift(signal);
-    if (this.signals.length > 50) this.signals.length = 50; // cap
+    if (this.signals.length > 50) this.signals.length = 50;
   },
 
-  // Kanban task CRUD
-  addTask(task) {
-    task.id = 't' + Date.now();
-    task.column = task.column || 'backlog';
-    this.tasks.push(task);
-    this.saveTasks();
-    return task;
+  // Kanban — backed by backend API
+  async addTask(task) {
+    const created = await ApiClient.createTask({
+      title: task.title,
+      desc: task.desc || '',
+      assignee: task.assignee || '',
+      priority: task.priority || 'medium',
+      column: task.column || 'backlog',
+    });
+    if (created) {
+      this.tasks.push(created);
+    }
+    return created;
   },
 
-  moveTask(taskId, toColumn) {
+  async moveTask(taskId, toColumn) {
     const task = this.tasks.find(t => t.id === taskId);
     if (task) {
       task.column = toColumn;
-      this.saveTasks();
+      await ApiClient.updateTask(taskId, { column: toColumn });
     }
   },
 
-  deleteTask(taskId) {
+  async deleteTask(taskId) {
     this.tasks = this.tasks.filter(t => t.id !== taskId);
-    this.saveTasks();
+    await ApiClient.deleteTask(taskId);
   },
 
-  saveTasks() {
-    localStorage.setItem('fleet-tasks', JSON.stringify(this.tasks));
+  async updateTaskFields(taskId, fields) {
+    const task = this.tasks.find(t => t.id === taskId);
+    if (task) {
+      Object.assign(task, fields);
+      await ApiClient.updateTask(taskId, fields);
+    }
   },
 
   getColumnTasks(col) {

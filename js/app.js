@@ -7,7 +7,7 @@ const App = {
   pollTimer: null,
 
   async init() {
-    State.init();
+    await State.init();
     UI.refreshAll();
     Kanban.init();
     Council.init();
@@ -155,10 +155,7 @@ const App = {
       document.getElementById('statusLatency').textContent = `API: ${avgLat}ms`;
     }
 
-    // Push a signal occasionally (for demo when API is down)
-    if (State.signals.length <= DEMO_SIGNALS.length) {
-      // API-driven signals would go here
-    }
+    // API-driven signals are fetched during init/poll
   },
 };
 

@@ -30,7 +30,7 @@ const Council = {
     }
 
     // Set vault bridge URL from config
-    this.vaultBridgeUrl = `${API_BASE_URL}:8699`;
+    this.vaultBridgeUrl = 'http://localhost:8699';
   },
 
   async startDebate(mode) {
